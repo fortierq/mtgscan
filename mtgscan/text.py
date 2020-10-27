@@ -27,22 +27,23 @@ class TextRecognition:
             text = text.replace(c, "")
         return text.lower()
 
-    def preprocess_texts(self, texts):
-        texts_proc = []
-        for text in texts:
+    def preprocess_texts(self, box_texts):
+        for i in range(len(box_texts)):
             if len(text) < 30:
-                texts_proc.append(self.preprocess(text))
+                box_texts[1] = self.preprocess(text)
             else: 
                 logging.info(text)
-        return texts_proc
 
-    def ocr_to_deck(self, texts, boxes):
-        L = list(zip(boxes, texts))
-        L.sort()
-
-        boxes, texts = zip(*L)
-        texts_proc = self.preprocess_texts(texts)
-        cards = self.texts_to_cards(texts_proc)
+    def ocr_to_deck(self, box_texts):
+        box_texts.sort()
+        self.preprocess_texts(box_texts)
+        
+        boxes, cards = [], []
+        for box, text in box_texts:
+            card = text_to_card(text)
+            if card != None:
+                boxes.append(box)
+                cards.append(card)
 
         deck = mtgscan.deck.Deck()
         sb = max(60, len(cards) - 15)
@@ -68,10 +69,3 @@ class TextRecognition:
             else: 
                 logging.info(f"Not found: {text}")
         return None
-        
-    def texts_to_cards(self, texts):
-        cards = []
-        for text in texts:
-            cards.append(self.text_to_card(text))
-        return cards
-    

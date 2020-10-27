@@ -1,11 +1,13 @@
 import os
+import requests
+import time
 
 class AzureRecognition:
 
     def __init__(self):
-        self.subscription_key = os.environ['COMPUTER_VISION_SUBSCRIPTION_KEY']
-        self.text_recognition_url = os.environ['COMPUTER_VISION_ENDPOINT'] + "/vision/v3.1/read/analyze"
-
+        self.subscription_key = os.environ['AZURE_VISION_KEY']
+        self.text_recognition_url = os.environ['AZURE_VISION_ENDPOINT'] + "/vision/v3.1/read/analyze"
+        
     def img_to_text(self, url_image):
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         data = {'url': url_image}
@@ -21,9 +23,7 @@ class AzureRecognition:
                 poll = False
             if ("status" in analysis and analysis['status'] == 'failed'):
                 poll = False
-        boxes = []
-        texts = []
+        box_texts = []
         for line in analysis["analyzeResult"]["readResults"][0]["lines"]:
-            boxes.append(line["boundingBox"])
-            texts.append(line["text"]) 
-        return boxes, texts
+            box_texts.append((line["boundingBox"], line["text"]))
+        return box_texts
