@@ -3,7 +3,7 @@ import logging
 from symspellpy import SymSpell, Verbosity
 import mtgscan.deck
 
-class TextRecognition:
+class MagicRecognition:
 
     def __init__(self, file_all_cards):
         f = open(file_all_cards, "r")

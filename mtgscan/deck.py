@@ -1,3 +1,4 @@
+import logging
 
 class Pile:
     def __init__(self):
@@ -12,6 +13,17 @@ class Pile:
     def add_cards(self, cards):
         for c in cards:
             self.add_card(c)
+
+    def diff(self, other):
+        res = 0
+        piles = [self, other]
+        for i in range(len(piles)):
+            for card in piles[i].cards:
+                n = 0
+                if card in piles[1-i].cards:
+                    n = piles[1-i].cards[card]
+                res += piles[i].cards[card] - n
+        return res
 
     def __str__(self):
         s = ""
@@ -55,4 +67,11 @@ class Deck:
             in_sideboard = False
             for line in f:
                 if line == "\n": in_sideboard = True
-                self.add_card(line, in_sideboard)
+                else:
+                    i = line.find(' ')
+                    n = int(line[:i])
+                    card = line[i+1:-1]
+                    self.add_cards([card]*n, in_sideboard)
+
+    def diff(self, other):
+        return self.maindeck.diff(other.maindeck) + self.sideboard.diff(other.sideboard)
