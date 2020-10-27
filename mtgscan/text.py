@@ -29,10 +29,11 @@ class TextRecognition:
 
     def preprocess_texts(self, box_texts):
         for i in range(len(box_texts)):
+            text = box_texts[i][1]
             if len(text) < 30:
-                box_texts[1] = self.preprocess(text)
+                box_texts[i][1] = self.preprocess(text)
             else: 
-                logging.info(text)
+                logging.info(f"Too long: {text}")
 
     def ocr_to_deck(self, box_texts):
         box_texts.sort()
@@ -40,7 +41,7 @@ class TextRecognition:
         
         boxes, cards = [], []
         for box, text in box_texts:
-            card = text_to_card(text)
+            card = self.text_to_card(text)
             if card != None:
                 boxes.append(box)
                 cards.append(card)
@@ -61,7 +62,7 @@ class TextRecognition:
             if sug != []:
                 card = self.all_cards[sug[0].term]
                 ratio = sug[0].distance/len(text)
-                if ratio < 0.25 or (card in cards and ratio < 0.4): 
+                if ratio < 0.25 or (card in self.all_cards and ratio < 0.4): 
                     logging.info(f"Found: {text} {ratio} {card}")
                     return card
                 else: 
