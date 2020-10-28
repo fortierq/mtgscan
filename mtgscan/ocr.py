@@ -8,7 +8,8 @@ class AzureRecognition:
     def __init__(self):
         self.subscription_key = os.environ['AZURE_VISION_KEY']
         self.text_recognition_url = os.environ['AZURE_VISION_ENDPOINT'] + "/vision/v3.1/read/analyze"
-        
+        self.box_texts = []
+
     def img_to_box_texts(self, url_image):
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         data = {'url': url_image}
@@ -25,15 +26,15 @@ class AzureRecognition:
                 poll = False
             if ("status" in analysis and analysis['status'] == 'failed'):
                 poll = False
-        box_texts = []
+        self.box_texts = []
         for line in analysis["analyzeResult"]["readResults"][0]["lines"]:
-            box_texts.append([line["boundingBox"], line["text"]])
-        return box_texts
+            self.box_texts.append([line["boundingBox"], line["text"]])
+        return self.box_texts
 
-    def save_box_texts(self, box_texts, file):
+    def save_box_texts(self, file):
         logging.info(f"Save box_texts to {file}")
         with open(file, "w") as f:
-            for box, text in box_texts:
+            for box, text in self.box_texts:
                 f.write(' '.join(map(str, box)))
                 f.write("\n")
                 f.write(text)
@@ -41,11 +42,11 @@ class AzureRecognition:
 
     def load_box_texts(self, file):
         logging.info(f"Load box_texts to {file}")
-        box_texts = []
+        self.box_texts = []
         with open(file, "r") as f:
             while True:
                 box = f.readline().rstrip('\n')
                 if box == "":
-                    return box_texts
+                    return self.box_texts
                 text = f.readline().rstrip('\n')
-                box_texts.append([list(map(int, box.split(" "))), text])
+                self.box_texts.append([list(map(int, box.split(" "))), text])
