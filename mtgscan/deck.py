@@ -17,12 +17,22 @@ class Pile:
     def diff(self, other):
         res = 0
         piles = [self, other]
-        for i in range(len(piles)):
-            for card in piles[i].cards:
-                n = 0
-                if card in piles[1-i].cards:
-                    n = piles[1-i].cards[card]
-                res += piles[i].cards[card] - n
+        for card in self.cards:
+            n, p = self.cards[card], 0 
+            if card in other.cards:
+                p = other.cards[card]
+            d = n - p
+            if d > 0:
+                logging.info(f"Diff {card}: {p} instead of {n}")
+                res += d
+        for card in other.cards:
+            n, p = other.cards[card], 0 
+            if card in self.cards:
+                p = self.cards[card]
+            d = n - p
+            if d > 0:
+                logging.info(f"Diff {card}: {n} instead of {p}")
+                res += d
         return res
 
     def __str__(self):
@@ -59,19 +69,24 @@ class Deck:
             self.add_card(card, in_sideboard)
 
     def save(self, file):
+        logging.info(f"Saving {file}")
         with open(file, "w") as f:
             f.write(str(self))
 
     def load(self, file):
+        logging.info(f"Loading {file}")
         with open(file, "r") as f:
             in_sideboard = False
             for line in f:
                 if line == "\n": in_sideboard = True
                 else:
-                    i = line.find(' ')
-                    n = int(line[:i])
-                    card = line[i+1:-1]
-                    self.add_cards([card]*n, in_sideboard)
+                    try:
+                        i = line.find(' ')
+                        n = int(line[:i])
+                        card = line[i+1:-1]
+                        self.add_cards([card]*n, in_sideboard)
+                    except:
+                        logging.warning(f"Can't read {line}")
 
     def diff(self, other):
         return self.maindeck.diff(other.maindeck) + self.sideboard.diff(other.sideboard)

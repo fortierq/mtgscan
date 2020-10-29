@@ -1,35 +1,33 @@
 import json
 import logging
 import re
+import os
 from symspellpy import SymSpell, Verbosity, editdistance
 import mtgscan.deck
 
 class MagicRecognition:
 
-    def __init__(self, file_all_cards):
-        f = open(file_all_cards, "r")
-        all_cards_json = json.load(f)
-        self.all_cards = dict()
-        for c in all_cards_json["data"].keys():
-            card = self.preprocess(c)
-            i = card.find("//")
-            if i != -1: card = card[:i]
-            self.all_cards[card] = c
-        f.close()
-        logging.info(f"Loaded {file_all_cards}: {len(self.all_cards)} cards")
-
-        self.sym_spell = SymSpell(max_dictionary_edit_distance=5)
+    def __init__(self, file_all_cards_json):
+        file_all_cards_txt = os.path.splitext(file_all_cards_json)[0]+".txt"
+        if not os.path.isfile(file_all_cards_txt):
+            logging.info(f"Save {file_all_cards_txt}")
+            with open(file_all_cards_json, "r") as f, open(file_all_cards_txt, "w") as g:
+                all_cards_json = json.load(f)
+                for card in all_cards_json["data"].keys():
+                    i = card.find(" //")
+                    if i != -1: 
+                        card = card[:i]
+                    g.write(card + "$1\n")
+    
+        self.sym_spell = SymSpell(max_dictionary_edit_distance=6)
         self.sym_spell._distance_algorithm = editdistance.DistanceAlgorithm.LEVENSHTEIN
-        for c in self.all_cards: 
-            self.sym_spell.create_dictionary_entry(c, 1)
+        self.sym_spell.load_dictionary(file_all_cards_txt, 0, 1, separator="$")
+        self.all_cards = self.sym_spell._words
+        logging.info(f"Load {file_all_cards_txt}: {len(self.all_cards)} cards")
         self.edit_dist = editdistance.EditDistance(editdistance.DistanceAlgorithm.LEVENSHTEIN)
 
     def preprocess(self, text):
-        rm = " @*()?"
-        for c in rm:
-            text = text.replace(c, "")
-        text = re.sub('[0-9]+', '', text)
-        return text.lower()
+        return re.sub("[^a-zA-Z',. ]", '', text).rstrip(' ')
 
     def preprocess_texts(self, box_texts):
         for i in range(len(box_texts)):
@@ -43,7 +41,7 @@ class MagicRecognition:
             card = self.search(text)
             if card != None:
                 boxes.append(box)
-                cards.append(self.all_cards[card])
+                cards.append(card)
 
         deck = mtgscan.deck.Deck()
         sb = max(60, len(cards) - 15)
@@ -54,7 +52,7 @@ class MagicRecognition:
     def search(self, text):
         if len(text) < 3: 
             return None
-        if len(text) > 25: 
+        if len(text) > 30: 
             logging.info(f"Too long: {text}")
             return None
         if text in self.all_cards:
@@ -74,12 +72,13 @@ class MagicRecognition:
                 logging.info(f"Found prefix: {text} {dist/i} {card}")
                 return card
         else:
+            text = text.replace('.', '').rstrip(' ')
             sug = self.sym_spell.lookup(text,Verbosity.CLOSEST,
-            max_edit_distance=min(5, int(0.25*len(text))))
+            max_edit_distance=min(6, int(0.3*len(text))))
             if sug != []:
                 card = sug[0].term
                 ratio = sug[0].distance/len(text)
-                if len(text) < len(card) + 3: 
+                if len(text) < len(card) + 5: 
                     logging.info(f"Corrected: {text} {ratio} {card}")
                     return card
                 else: 
