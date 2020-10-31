@@ -34,19 +34,55 @@ class MagicRecognition:
             box_texts[i][1] = self.preprocess(box_texts[i][1])
 
     def ocr_to_deck(self, box_texts):
+        multipliers = [[], []]
         box_texts.sort()
-        self.preprocess_texts(box_texts)
         boxes, cards = [], []
         for box, text in box_texts:
-            card = self.search(text)
+            if len(text) == 2:
+                try:
+                    for i in [0, 1]:
+                        if text[i] in '×xX':  
+                            multipliers[i].append((box, int(text[1-i])))
+                except: 
+                    continue
+            card = self.search(self.preprocess(text))
             if card != None:
                 boxes.append(box)
-                cards.append(card)
-
+                cards.append([card, 1])
+        def multiplier_to_card(mult, comp):
+            i_min = 0
+            for i in range(1, len(cards)):
+                if comp(boxes[i], boxes[i_min]):
+                    i_min = i
+            cards[i_min][1] = m[1]
+            logging.info(f"{cards[i_min][0]} assigned to x{m[1]}")
+        def dist(p, q):     
+                return (p[0] - q[0])**2 + (p[1] - q[1])**2
+        for m in multipliers[0]: # maindeck
+            m_box = m[0]
+            def comp(box1, box2):
+                if box1[0] > m_box[0] or box1[1] > m_box[1]:
+                    return False
+                return dist(m_box, box1) < dist(m_box, box2)
+            multiplier_to_card(m, comp)
+        for m in multipliers[1]: # sideboard
+            m_box = m[0]
+            def comp(box1, box2):
+                return dist(m_box, box1) < dist(m_box, box2)
+            multiplier_to_card(m, comp)
+        maindeck, sideboard = mtgscan.deck.Pile(), mtgscan.deck.Pile()
+        n_cards = sum(c[1] for c in cards)
+        n_added = 0
+        current = maindeck
+        for card, n in cards:
+            n_added += n
+            if n_added >= max(60, n_cards - 15):
+                current = sideboard
+            if card in current.cards: current.cards[card] += n
+            else: current.cards[card] = n
         deck = mtgscan.deck.Deck()
-        sb = max(60, len(cards) - 15)
-        deck.add_cards(cards[:sb], in_sideboard=False)
-        deck.add_cards(cards[sb:], in_sideboard=True)
+        deck.maindeck = maindeck
+        deck.sideboard = sideboard 
         return deck
 
     def search(self, text):
@@ -74,7 +110,7 @@ class MagicRecognition:
         else:
             text = text.replace('.', '').rstrip(' ')
             sug = self.sym_spell.lookup(text,Verbosity.CLOSEST,
-            max_edit_distance=min(6, int(0.3*len(text))))
+                max_edit_distance=min(6, int(0.3*len(text))))
             if sug != []:
                 card = sug[0].term
                 ratio = sug[0].distance/len(text)
