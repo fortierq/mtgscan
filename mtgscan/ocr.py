@@ -2,6 +2,8 @@ import os
 import requests
 import time
 import logging
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 class OCR:
     def save_box_texts(self, file):
@@ -24,9 +26,23 @@ class OCR:
                 text = f.readline().rstrip('\n')
                 self.box_texts.append([list(map(int, box.split(" "))), text])
     
-    def save_box_texts_img(self, file):
-        logging.info(f"Save box_texts image to {file}")
-        
+    def save_box_texts_image(self, fimage): 
+        fimage_box_texts = f"{fimage}_{self}"
+        if not os.path.isfile(fimage_box_texts):
+            logging.info(f"Save box_texts image to {fimage_box_texts}")
+            img = plt.imread(fimage)
+            fig, ax = plt.subplots(figsize=(img.shape[1]//64, img.shape[0]//64))
+            ax.imshow(img, aspect='equal')
+            for box, text in self.box_texts:
+                P, Q, R, S = (box[0], box[1]), (box[2], box[3]), (box[4], box[5]), (box[6], box[7])
+                x = [P[0], Q[0], Q[0], R[0], R[0], S[0], S[0], P[0]]
+                y = [P[1], Q[1], Q[1], R[1], R[1], S[1], S[1], P[1]]
+                line = Line2D(x, y, linewidth=3.5, color='red')
+                ax.add_line(line)
+                ax.text(P[0], P[1], text, bbox=dict(facecolor='blue', alpha=0.5), fontsize=11, color='white')
+            plt.axis('off')
+            plt.tight_layout()
+            fig.savefig(fimage_box_texts)
 
 class AzureOCR(OCR):
     def __init__(self):
@@ -34,11 +50,21 @@ class AzureOCR(OCR):
         self.text_recognition_url = os.environ['AZURE_VISION_ENDPOINT'] + "/vision/v3.1/read/analyze"
         self.box_texts = []
 
-    def img_to_box_texts(self, url_image):
+    def __str__(self):
+        return "azure"
+
+    def image_to_box_texts(self, image, is_url = False):
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
-        data = {'url': url_image}
-        logging.info(f"Send image {url_image} to Azure")
-        response = requests.post(self.text_recognition_url, headers=headers, json=data)
+        json, data = None, None
+        parsed = parse.urlparse(fname)
+        if len(parsed.scheme) > 1: # if URL
+            json = {'url': image}
+        else:
+            headers['Content-Type'] = 'application/octet-stream'
+            with open(image, "rb") as f:
+                data = f.read()
+        logging.info(f"Send image to Azure")
+        response = requests.post(self.text_recognition_url, headers=headers, json=json, data=data)
         response.raise_for_status()
         analysis = {}
         poll = True
@@ -46,9 +72,9 @@ class AzureOCR(OCR):
             response_final = requests.get(response.headers["Operation-Location"], headers=headers)
             analysis = response_final.json()
             time.sleep(1)
-            if ("analyzeResult" in analysis):
+            if "analyzeResult" in analysis:
                 poll = False
-            if ("status" in analysis and analysis['status'] == 'failed'):
+            if "status" in analysis and analysis['status'] == 'failed':
                 poll = False
         self.box_texts = []
         for line in analysis["analyzeResult"]["readResults"][0]["lines"]:
