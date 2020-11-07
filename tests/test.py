@@ -8,7 +8,7 @@ import mtgscan.text
 import mtgscan.deck
 import logging 
 
-FORMAT = "[%(filename)s:%(lineno)s - %(funcName)s()] %(message)s"
+FORMAT = "[%(asctime)s %(filename)s:%(lineno)s:%(funcName)s()] %(message)s"
 
 ocr_azure = mtgscan.ocr.AzureOCR()
 text_rec = mtgscan.text.MagicRecognition()
@@ -17,7 +17,7 @@ with os.scandir(os.path.join(DIR_FILE, 'samples')) as samples:
     for sample in samples:
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
-        logging.basicConfig(level=logging.INFO, format=FORMAT,
+        logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt='%I:%M:%S',
             filename=os.path.join(sample,'test.log'), filemode='w')
         print(f"Testing {sample}")
         image = os.path.join(sample, "image")

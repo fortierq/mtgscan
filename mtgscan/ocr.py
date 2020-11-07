@@ -4,6 +4,7 @@ import time
 import logging
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+from urllib.parse import urlparse
 
 class OCR:
     def save_box_texts(self, file):
@@ -56,7 +57,7 @@ class AzureOCR(OCR):
     def image_to_box_texts(self, image, is_url = False):
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         json, data = None, None
-        parsed = parse.urlparse(fname)
+        parsed = urlparse(image)
         if len(parsed.scheme) > 1: # if URL
             json = {'url': image}
         else:
@@ -79,4 +80,3 @@ class AzureOCR(OCR):
         self.box_texts = []
         for line in analysis["analyzeResult"]["readResults"][0]["lines"]:
             self.box_texts.append([line["boundingBox"], line["text"]])
-        return self.box_texts
