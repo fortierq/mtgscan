@@ -11,7 +11,7 @@ import logging
 FORMAT = "[%(filename)s:%(lineno)s - %(funcName)s()] %(message)s"
 
 ocr_azure = mtgscan.ocr.AzureOCR()
-text_rec = mtgscan.text.MagicRecognition("mtgscan/VintageAtomic.json")
+text_rec = mtgscan.text.MagicRecognition()
 errors = []
 with os.scandir(os.path.join(DIR_FILE, 'samples')) as samples:
     for sample in samples:
