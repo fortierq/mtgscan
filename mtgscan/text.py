@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import re
@@ -8,16 +7,16 @@ from symspellpy import SymSpell, Verbosity, editdistance
 
 import mtgscan.deck
 
-
 class MagicRecognition:
 
     def __init__(self):
         file_all_cards = "all_cards.txt"
         if not os.path.isfile(file_all_cards):
-            r = requests.get("https://mtgjson.com/api/v5/VintageAtomic.json")
-            logging.info(f"Save {file_all_cards}")
+            file_all_cards_json = "https://mtgjson.com/api/v5/VintageAtomic.json"
+            print(f"Loading {file_all_cards_json}")
+            r = requests.get(file_all_cards_json)
             with open(file_all_cards, "w") as g:
-                all_cards_json = json.load(r.content)
+                all_cards_json = r.json()
                 for card in all_cards_json["data"].keys():
                     i = card.find(" //")
                     if i != -1: 
@@ -28,7 +27,7 @@ class MagicRecognition:
         self.sym_spell._distance_algorithm = editdistance.DistanceAlgorithm.LEVENSHTEIN
         self.sym_spell.load_dictionary(file_all_cards, 0, 1, separator="$")
         self.all_cards = self.sym_spell._words
-        logging.info(f"Load {file_all_cards}: {len(self.all_cards)} cards")
+        print(f"Loaded {file_all_cards}: {len(self.all_cards)} cards")
         self.edit_dist = editdistance.EditDistance(editdistance.DistanceAlgorithm.LEVENSHTEIN)
 
     def preprocess(self, text):
