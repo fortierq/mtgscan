@@ -83,7 +83,7 @@ class Deck:
                     try:
                         i = line.find(' ')
                         n = int(line[:i])
-                        card = line[i+1:-1]
+                        card = line[i+1:].rstrip()
                         self.add_cards([card]*n, in_sideboard)
                     except:
                         logging.warning(f"Can't read {line}")

@@ -27,11 +27,10 @@ class OCR:
                 text = f.readline().rstrip('\n')
                 self.box_texts.append([list(map(int, box.split(" "))), text])
     
-    def save_box_texts_image(self, fimage): 
-        fimage_box_texts = f"{fimage}_{self}"
-        if not os.path.isfile(fimage_box_texts):
-            logging.info(f"Save box_texts image to {fimage_box_texts}")
-            img = plt.imread(fimage)
+    def save_box_texts_image(self, image_in, image_out): 
+        if not os.path.isfile(image_out):
+            logging.info(f"Save box_texts image to {image_out}")
+            img = plt.imread(image_in, image_out)
             fig, ax = plt.subplots(figsize=(img.shape[1]//64, img.shape[0]//64))
             ax.imshow(img, aspect='equal')
             for box, text in self.box_texts:
@@ -43,7 +42,7 @@ class OCR:
                 ax.text(P[0], P[1], text, bbox=dict(facecolor='blue', alpha=0.5), fontsize=11, color='white')
             plt.axis('off')
             plt.tight_layout()
-            fig.savefig(fimage_box_texts)
+            fig.savefig(image_out)
 
 class AzureOCR(OCR):
     def __init__(self):
@@ -64,7 +63,7 @@ class AzureOCR(OCR):
             headers['Content-Type'] = 'application/octet-stream'
             with open(image, "rb") as f:
                 data = f.read()
-        logging.info(f"Send image to Azure")
+        logging.info(f"Send {image} to Azure")
         response = requests.post(self.text_recognition_url, headers=headers, json=json, data=data)
         response.raise_for_status()
         analysis = {}

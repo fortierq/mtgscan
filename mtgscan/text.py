@@ -1,6 +1,8 @@
 import logging
-import os
+from logging import exception
+from pathlib import Path
 import re
+import json
 
 import requests
 from symspellpy import SymSpell, Verbosity, editdistance
@@ -9,9 +11,12 @@ import mtgscan.deck
 
 class MagicRecognition:
 
-    def __init__(self):
+    def __init__(self, max_ratio_diff = 0.3, max_ratio_diff_keyword = 0.2):
+        self.max_ratio_diff = max_ratio_diff
+        self.max_ratio_diff_keyword = max_ratio_diff_keyword
+
         file_all_cards = "all_cards.txt"
-        if not os.path.isfile(file_all_cards):
+        if not Path(file_all_cards).is_file():
             file_all_cards_json = "https://mtgjson.com/api/v5/VintageAtomic.json"
             print(f"Loading {file_all_cards_json}")
             r = requests.get(file_all_cards_json)
@@ -22,13 +27,24 @@ class MagicRecognition:
                     if i != -1: 
                         card = card[:i]
                     g.write(card + "$1\n")
-    
-        self.sym_spell = SymSpell(max_dictionary_edit_distance=6)
-        self.sym_spell._distance_algorithm = editdistance.DistanceAlgorithm.LEVENSHTEIN
-        self.sym_spell.load_dictionary(file_all_cards, 0, 1, separator="$")
-        self.all_cards = self.sym_spell._words
+
+        self.sym_all_cards = SymSpell(max_dictionary_edit_distance=6)
+        self.sym_all_cards._distance_algorithm = editdistance.DistanceAlgorithm.LEVENSHTEIN
+        self.sym_all_cards.load_dictionary(file_all_cards, 0, 1, separator="$")
+        self.all_cards = self.sym_all_cards._words
         print(f"Loaded {file_all_cards}: {len(self.all_cards)} cards")
         self.edit_dist = editdistance.EditDistance(editdistance.DistanceAlgorithm.LEVENSHTEIN)
+
+        def concat_lists(ll):
+            res = []
+            for l in ll: 
+                res.extend(l)
+            return res
+        keywords = concat_lists(json.load(open("Keywords.json", "r"))["data"].values())
+        keywords.extend(["Display", "Land"])
+        self.sym_keywords = SymSpell(max_dictionary_edit_distance=3)
+        for k in keywords:
+            self.sym_keywords.create_dictionary_entry(k, 1)
 
     def preprocess(self, text):
         return re.sub("[^a-zA-Z',. ]", '', text).rstrip(' ')
@@ -49,6 +65,10 @@ class MagicRecognition:
                             multipliers[i].append((box, int(text[1-i])))
                 except: 
                     continue
+            sug = self.sym_keywords.lookup(text, Verbosity.CLOSEST, max_edit_distance=min(3, int(self.max_ratio_diff_keyword*len(text))))
+            if sug != []:
+                logging.info(f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
+                continue
             card = self.search(self.preprocess(text))
             if card != None:
                 boxes.append(box)
@@ -80,7 +100,7 @@ class MagicRecognition:
         current = maindeck
         for card, n in cards:
             n_added += n
-            if n_added >= max(60, n_cards - 15):
+            if n_added > max(60, n_cards - 15):
                 current = sideboard
             if card in current.cards: current.cards[card] += n
             else: current.cards[card] = n
@@ -89,17 +109,17 @@ class MagicRecognition:
         deck.sideboard = sideboard 
         return deck
 
-    def search(self, text):
+    def search(self, text): 
         if len(text) < 3: 
             return None
-        if len(text) > 30: 
+        if len(text) > 30: # assume card text 
             logging.info(f"Too long: {text}")
             return None
         if text in self.all_cards:
             return text
-        i = text.find("..")
+        i = text.find("..") # search for truncated card name
         if i != -1:
-            dist = int(0.3 * i)
+            dist = int(self.max_ratio_diff * i)
             card = None
             for c in self.all_cards:
                 d = self.edit_dist.compare(text[:i], c[:i], dist)
@@ -113,16 +133,15 @@ class MagicRecognition:
                 return card
         else:
             text = text.replace('.', '').rstrip(' ')
-            sug = self.sym_spell.lookup(text,Verbosity.CLOSEST,
-                max_edit_distance=min(6, int(0.3*len(text))))
+            sug = self.sym_all_cards.lookup(text,Verbosity.CLOSEST, max_edit_distance=min(6, int(self.max_ratio_diff*len(text))))
             if sug != []:
                 card = sug[0].term
                 ratio = sug[0].distance/len(text)
-                if len(text) < len(card) + 5: 
+                if len(text) < len(card) + 7: 
                     logging.info(f"Corrected: {text} {ratio} {card}")
                     return card
                 else: 
-                    logging.info(f"Not corrected: {text} {ratio} {card}")
+                    logging.info(f"Not corrected (too long): {text} {ratio} {card}")
             else: 
                 logging.info(f"Not found: {text}")
         return None
