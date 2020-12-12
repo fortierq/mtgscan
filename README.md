@@ -1,0 +1,101 @@
+# MTGScan
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+MTGScan uses OCR recognition to list Magic cards from an image.  
+After OCR, cards are looked up in a dictionnary provided by MTGJSON (https://mtgjson.com), using fuzzy search with SymSpell (https://github.com/wolfgarbe/SymSpell).
+
+## Prerequisites
+
+- Python >= 3.7
+- Poetry: https://python-poetry.org/
+- Credentials for the required OCR (e.g Azure Computer Vision Read API)
+
+## Installation
+
+```python
+poetry install
+```
+
+## OCR
+
+Currently, only Azure OCR is supported. To add an OCR, inherit mtgscan.ocr.OCR.
+
+### Azure
+
+API subscription key and endpoint must be stored in environment variables `AZURE_VISION_KEY` and `AZURE_VISION_ENDPOINT` respectively.
+
+## Tests
+
+Every test case is stored in a separated folder in tests/samples/ containing:
+- image.*: image of Magic cards
+- deck.txt: decklist of the cards on the image
+
+To run every test:
+```python
+poetry run python tests/test.py
+```
+
+This produces the following outputs, for each sample and OCR:
+- print statistics about number of cards found, number of errors...
+- test.log: informations about the run
+- errors.txt: history of the number of errors made by the OCR
+- box_texts.txt: output of the OCR
+
+## Basic usage
+
+Let's compute the decklist from the following image:
+![alt text](https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large)
+
+```python
+from mtgscan.text import MagicRecognition
+from mtgscan.ocr import AzureOCR
+
+azure = AzureOCR()
+rec = MagicRecognition()
+azure.image_to_box_texts("https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large")
+deck = rec.ocr_to_deck(azure.box_texts)
+print(deck)
+```
+
+Output:
+```console
+4 Ancient Tomb
+4 Mishra's Factory
+4 Mishra's Workshop
+1 Strip Mine
+1 Tolarian Academy
+4 Wasteland
+1 Sacrifice
+1 Mox Ruby
+1 Mox Emerald
+1 Mox Jet
+1 Mox Pearl
+1 Mox Sapphire
+1 Black Lotus
+1 Mana Crypt
+1 Sol Ring
+4 Phyrexian Revoker
+4 Arcbound Ravager
+1 Thorn of Amethyst
+4 Sphere of Resistance
+4 Foundry Inspector
+3 Chief of the Foundry
+1 Trinisphere
+1 Lodestone Golem
+1 Mystic Forge
+2 Fleetwheel Cruiser
+1 Traxos, Scourge of Kroog
+4 Walking Ballista
+3 Stonecoil Serpent
+1 Chalice of the Void
+
+3 Mindbreak Trap
+4 Leyline of the Void
+2 Crucible of Worlds
+4 Pithing Needle
+```
+
+## Features
+- Tested on MTGO, Arena and IRL (simple) images
+- Handle sideboard (only on the right side)  
+- Support for stacked cards
