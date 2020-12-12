@@ -56,7 +56,7 @@ class AzureOCR(OCR):
     def image_to_box_texts(self, image, is_url = False):
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         json, data = None, None
-        parsed = urlparse(image)
+        parsed = urlparse(str(image))
         if len(parsed.scheme) > 1: # if URL
             json = {'url': image}
         else:

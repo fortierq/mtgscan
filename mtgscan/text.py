@@ -41,7 +41,7 @@ class MagicRecognition:
                 res.extend(l)
             return res
         keywords = concat_lists(json.load(open("Keywords.json", "r"))["data"].values())
-        keywords.extend(["Display", "Land"])
+        keywords.extend(["Display", "Land", "Search", "Profile"])
         self.sym_keywords = SymSpell(max_dictionary_edit_distance=3)
         for k in keywords:
             self.sym_keywords.create_dictionary_entry(k, 1)
@@ -68,11 +68,11 @@ class MagicRecognition:
             sug = self.sym_keywords.lookup(text, Verbosity.CLOSEST, max_edit_distance=min(3, int(self.max_ratio_diff_keyword*len(text))))
             if sug != []:
                 logging.info(f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
-                continue
-            card = self.search(self.preprocess(text))
-            if card != None:
-                boxes.append(box)
-                cards.append([card, 1])
+            else:
+                card = self.search(self.preprocess(text))
+                if card != None:
+                    boxes.append(box)
+                    cards.append([card, 1])
         def multiplier_to_card(mult, comp):
             i_min = 0
             for i in range(1, len(cards)):
@@ -97,13 +97,17 @@ class MagicRecognition:
         maindeck, sideboard = mtgscan.deck.Pile(), mtgscan.deck.Pile()
         n_cards = sum(c[1] for c in cards)
         n_added = 0
-        current = maindeck
+        last_main_card = max(60, n_cards - 15)
         for card, n in cards:
+            def add_cards(deck, p):
+                if card in deck.cards: 
+                    deck.cards[card] += p
+                elif p > 0:
+                    deck.cards[card] = p
+            n_added_main = max(min(n, last_main_card - n_added), 0)
+            add_cards(maindeck, n_added_main)
+            add_cards(sideboard, n - n_added_main)
             n_added += n
-            if n_added > max(60, n_cards - 15):
-                current = sideboard
-            if card in current.cards: current.cards[card] += n
-            else: current.cards[card] = n
         deck = mtgscan.deck.Deck()
         deck.maindeck = maindeck
         deck.sideboard = sideboard 
