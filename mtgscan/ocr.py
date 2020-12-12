@@ -61,7 +61,7 @@ class AzureOCR(OCR):
     def __str__(self):
         return "azure"
 
-    def image_to_box_texts(self, image, is_url=False):
+    def image_to_box_texts(self, image):
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         json, data = None, None
         parsed = urlparse(str(image))
