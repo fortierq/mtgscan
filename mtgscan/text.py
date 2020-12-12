@@ -38,7 +38,7 @@ class MagicRecognition:
                     i = card.find(" //")
                     if i != -1:
                         card = card[:i]
-                    f.write_text(card + "$1\n")
+                    f.write(card + "$1\n")
 
         self.sym_all_cards = SymSpell(max_dictionary_edit_distance=6)
         self.sym_all_cards._distance_algorithm = editdistance.DistanceAlgorithm.LEVENSHTEIN
