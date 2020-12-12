@@ -1,9 +1,6 @@
 .vscode/
-AtomicCards.json
-workspace*
-*.jpg
-*.jpeg
-*.png
+*workspace*
+azure/
 *.json
 
 # Byte-compiled / optimized / DLL files

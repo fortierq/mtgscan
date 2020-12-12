@@ -1,0 +1,31 @@
+1 Glacial Fortress
+3 Castle Ardenvale
+1 Castle Vantress
+4 Ketria Triome
+4 Hallowed Fountain
+3 Steam Vents
+1 Mountain
+4 Sulfur Falls
+3 Plains
+1 Island
+4 Sacred Foundry
+3 Raugrin Triome
+2 Steam Vents
+4 Chained to the Rocks
+4 The Birth of Meletis
+4 Omen of the Sea
+3 Omen of the Sun
+4 Narset, Parter of Veils
+4 Teferi, Time Raveler
+4 Fires of Invention
+4 Transmogrify
+4 Shark Typhoon
+3 Agent of Treachery
+3 Dovin's Veto
+1 Baffling End
+
+1 Yorion, Sky Nomad
+1 Dovin's Veto
+1 Void Winnower
+3 Anger of the Gods
+4 Mystical Dispute
