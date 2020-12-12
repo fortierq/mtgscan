@@ -8,19 +8,16 @@ from symspellpy import SymSpell, Verbosity, editdistance
 
 import mtgscan.deck
 
-
-def load_json(url):
-    print(f"Loading {url}")
-    r = requests.get(url)
-    return r.json()
-
-
 DIR_DATA = Path("data")
 FILE_ALL_CARDS = DIR_DATA / "all_cards.txt"
 URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"
 FILE_KEYWORDS = DIR_DATA / "Keywords.json"
 URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
 
+def load_json(url):
+    print(f"Loading {url}")
+    r = requests.get(url)
+    return r.json()
 
 class MagicRecognition:
 
@@ -68,8 +65,8 @@ class MagicRecognition:
         return re.sub("[^a-zA-Z',. ]", '', text).rstrip(' ')
 
     def preprocess_texts(self, box_texts):
-        for i in range(len(box_texts)):
-            box_texts[i][1] = self.preprocess(box_texts[i][1])
+        for box_text in box_texts:
+            box_text[1] = self.preprocess(box_text[1])
 
     def ocr_to_deck(self, box_texts):
         multipliers = [[], []]
@@ -104,19 +101,15 @@ class MagicRecognition:
             return (p[0] - q[0])**2 + (p[1] - q[1])**2
 
         for m in multipliers[0]:  # maindeck
-            m_box = m[0]
-
             def comp(box1, box2):
-                if box1[0] > m_box[0] or box1[1] > m_box[1]:
+                if box1[0] > m[0][0] or box1[1] > m[0][1]:
                     return False
-                return dist(m_box, box1) < dist(m_box, box2)
+                return dist(m[0], box1) < dist(m[0], box2)
             multiplier_to_card(m, comp)
 
         for m in multipliers[1]:  # sideboard
-            m_box = m[0]
-
             def comp(box1, box2):
-                return dist(m_box, box1) < dist(m_box, box2)
+                return dist(m[0], box1) < dist(m[0], box2)
             multiplier_to_card(m, comp)
 
         maindeck, sideboard = mtgscan.deck.Pile(), mtgscan.deck.Pile()
@@ -170,9 +163,7 @@ class MagicRecognition:
                 if len(text) < len(card) + 7:
                     logging.info(f"Corrected: {text} {ratio} {card}")
                     return card
-                else:
-                    logging.info(
-                        f"Not corrected (too long): {text} {ratio} {card}")
+                logging.info(f"Not corrected (too long): {text} {ratio} {card}")
             else:
                 logging.info(f"Not found: {text}")
         return None

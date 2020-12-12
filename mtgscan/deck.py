@@ -3,11 +3,11 @@ import logging
 class Pile:
     def __init__(self):
         self.cards = dict()
-    
+
     def add_card(self, card):
-        if card in self.cards: 
+        if card in self.cards:
             self.cards[card] += 1
-        else: 
+        else:
             self.cards[card] = 1
 
     def add_cards(self, cards):
@@ -16,9 +16,8 @@ class Pile:
 
     def diff(self, other):
         res = 0
-        piles = [self, other]
         for card in self.cards:
-            n, p = self.cards[card], 0 
+            n, p = self.cards[card], 0
             if card in other.cards:
                 p = other.cards[card]
             d = n - p
@@ -26,7 +25,7 @@ class Pile:
                 logging.info(f"Diff {card}: {p} instead of {n}")
                 res += d
         for card in other.cards:
-            n, p = other.cards[card], 0 
+            n, p = other.cards[card], 0
             if card in self.cards:
                 p = self.cards[card]
             d = n - p
@@ -52,9 +51,8 @@ class Deck:
     def __str__(self):
         if len(self.sideboard) == 0:
             return str(self.maindeck)
-        else:
-            return str(self.maindeck) + "\n" + str(self.sideboard)
-    
+        return str(self.maindeck) + "\n" + str(self.sideboard)
+
     def __len__(self):
         return len(self.maindeck) + len(self.sideboard)
 
@@ -78,14 +76,15 @@ class Deck:
         with open(file, "r") as f:
             in_sideboard = False
             for line in f:
-                if line == "\n": in_sideboard = True
+                if line == "\n":
+                    in_sideboard = True
                 else:
                     try:
                         i = line.find(' ')
                         n = int(line[:i])
                         card = line[i+1:].rstrip()
                         self.add_cards([card]*n, in_sideboard)
-                    except:
+                    except (ValueError, IndexError):
                         logging.warning(f"Can't read {line}")
 
     def diff(self, other):

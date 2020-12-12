@@ -33,7 +33,7 @@ for sample in DIR_SAMPLES.iterdir():
         try:
             with open(ocr_path/"errors.txt", "r") as f:
                 errors_last = int(f.readlines()[-1].split(' ')[-1])
-        except:
+        except (FileNotFoundError, IndexError):
             errors_last = float("inf")
         if not (ocr_path/"box_texts.txt").is_file():
             ocr.image_to_box_texts(sample/image)
