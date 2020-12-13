@@ -16,10 +16,12 @@ URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"
 FILE_KEYWORDS = DIR_DATA / "Keywords.json"
 URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
 
+
 def load_json(url):
     print(f"Loading {url}")
     r = requests.get(url)
     return r.json()
+
 
 class MagicRecognition:
 
@@ -61,8 +63,7 @@ class MagicRecognition:
         for k in keywords:
             self.sym_keywords.create_dictionary_entry(k, 1)
 
-    @staticmethod
-    def preprocess(text):
+    def preprocess(self, text):
         return re.sub("[^a-zA-Z',. ]", '', text).rstrip(' ')
 
     def preprocess_texts(self, box_texts: BoxTextList) -> None:
@@ -70,37 +71,38 @@ class MagicRecognition:
             box_text.text = self.preprocess(box_text.text)
 
     def box_texts_to_cards(self, box_texts: BoxTextList) -> BoxTextList:
+        box_texts.sort()
         box_cards = BoxTextList()
         for box, text, _ in box_texts:
             sug = self.sym_keywords.lookup(text, Verbosity.CLOSEST,
                                            max_edit_distance=min(3, int(self.max_ratio_diff_keyword*len(text))))
             if sug != []:
-                logging.info(f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
+                logging.info(
+                    f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
             else:
                 card = self.search(self.preprocess(text))
                 if card is not None:
                     box_cards.add(box, card)
         return box_cards
 
-    @staticmethod
-    def assign_stacked(box_texts: BoxTextList, box_cards: BoxTextList) -> None:
+    def assign_stacked(self, box_texts: BoxTextList, box_cards: BoxTextList) -> None:
         def assign_stacked_one(box_cards: BoxTextList, m: int, comp) -> None:
             i_min = 0
-            for i in range(len(box_cards)):
-                if comp(box_cards[i].box, box_cards[i_min].box):
+            for i, box_card in enumerate(box_cards):
+                if comp(box_card.box, box_cards[i_min].box):
                     i_min = i
             box_cards[i_min].n = m
             logging.info(f"{box_cards[i_min].text} assigned to x{m}")
 
         def dist(p: tuple, q: tuple) -> float:
             return (p[0] - q[0])**2 + (p[1] - q[1])**2
-        
+
         def comp_md(box1: tuple, box2: tuple, box: tuple) -> float:
+            if box1[0] > box[0] or box1[1] > box[1]:
+                return False
             return dist(box, box1) < dist(box, box2)
 
         def comp_sb(box1: tuple, box2: tuple, box: tuple) -> float:
-            if box1[0] > box[0] or box1[1] > box[1]:
-                return False
             return dist(box, box1) < dist(box, box2)
 
         comp = (comp_md, comp_sb)
@@ -108,13 +110,10 @@ class MagicRecognition:
             if len(text) == 2:
                 for i in [0, 1]:
                     if text[i] in '×xX' and text[1 - i].isnumeric():
-                        assign_stacked_one(box_cards, int(text[1 - i]), partial(comp[i], box=box))
+                        assign_stacked_one(box_cards, int(
+                            text[1 - i]), partial(comp[i], box=box))
 
-    def box_texts_to_stacked_cards(self, box_texts, image=None):
-        box_texts.sort()
-        box_cards = self.box_texts_to_cards(box_texts)
-        self.assign_stacked(box_texts, box_cards)
-
+    def box_cards_to_deck(self, box_cards):
         maindeck, sideboard = Pile(), Pile()
         n_cards = sum(c.n for c in box_cards)
         n_added = 0
@@ -133,6 +132,11 @@ class MagicRecognition:
         deck.maindeck = maindeck
         deck.sideboard = sideboard
         return deck
+
+    def box_texts_to_deck(self, box_texts):
+        box_cards = self.box_texts_to_cards(box_texts)
+        self.assign_stacked(box_texts, box_cards)
+        return self.box_cards_to_deck(box_cards)
 
     def search(self, text):
         if len(text) < 3:
@@ -166,7 +170,8 @@ class MagicRecognition:
                 if len(text) < len(card) + 7:
                     logging.info(f"Corrected: {text} {ratio} {card}")
                     return card
-                logging.info(f"Not corrected (too long): {text} {ratio} {card}")
+                logging.info(
+                    f"Not corrected (too long): {text} {ratio} {card}")
             else:
                 logging.info(f"Not found: {text}")
         return None
