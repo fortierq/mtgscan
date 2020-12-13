@@ -141,3 +141,4 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+data/all_cards.txt

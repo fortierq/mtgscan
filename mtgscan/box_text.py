@@ -69,7 +69,7 @@ class BoxTextList:
             if n != 1:
                 text = f"{n}x {text}"
             ax.text(P[0], P[1], text, bbox=dict(
-                facecolor='blue', alpha=0.5), fontsize=11, color='white')
+                facecolor='blue', alpha=0.5), fontsize=13, color='white')
         plt.axis('off')
         plt.tight_layout()
         fig.savefig(image_out)

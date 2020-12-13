@@ -1,6 +1,8 @@
 # MTGScan
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+![mtgscan](https://user-images.githubusercontent.com/49362475/102022934-448ffb80-3d8a-11eb-8948-3a10d190162a.jpg)
+
 MTGScan uses OCR recognition to list Magic cards from an image.  
 After OCR, cards are looked up in a dictionnary provided by MTGJSON (https://mtgjson.com), using fuzzy search with SymSpell (https://github.com/wolfgarbe/SymSpell).
 
@@ -18,11 +20,15 @@ poetry install
 
 ## OCR
 
-Currently, only Azure OCR is supported. To add an OCR, inherit mtgscan.ocr.OCR.
+Currently, only Azure OCR is supported. To add an OCR, inherit mtgscan.ocr.OCR.  
 
 ### Azure
 
-API subscription key and endpoint must be stored in environment variables `AZURE_VISION_KEY` and `AZURE_VISION_ENDPOINT` respectively.
+API subscription key and endpoint must be stored in environment variables `AZURE_VISION_KEY` and `AZURE_VISION_ENDPOINT` respectively.  
+Steps:
+- Subscribre for a free Azure account: https://azure.microsoft.com/free/cognitive-services
+- Create a Computer Vision resource: https://portal.azure.com/#create/Microsoft.CognitiveServicesComputerVision
+- Get your key and endpoint
 
 ## Tests
 
@@ -48,9 +54,9 @@ Let's compute the decklist from the following image:
 
 ```python
 from mtgscan.text import MagicRecognition
-from mtgscan.ocr import AzureOCR
+from mtgscan.ocr import Azure
 
-azure = AzureOCR()
+azure = Azure()
 rec = MagicRecognition()
 azure.image_to_box_texts("https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large")
 deck = rec.ocr_to_deck(azure.box_texts)
