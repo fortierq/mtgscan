@@ -14,7 +14,7 @@ class OCR:
     box_texts: BoxTextList = field(default_factory=BoxTextList)
 
 
-class AzureOCR(OCR):
+class Azure(OCR):
     def __init__(self):
         self.subscription_key = os.environ['AZURE_VISION_KEY']
         self.text_recognition_url = os.environ['AZURE_VISION_ENDPOINT'] + \

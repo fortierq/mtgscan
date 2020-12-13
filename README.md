@@ -1,5 +1,6 @@
 # MTGScan
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![CodeFactor](https://www.codefactor.io/repository/github/fortierq/mtgscan/badge)](https://www.codefactor.io/repository/github/fortierq/mtgscan)
 
 ![mtgscan](https://user-images.githubusercontent.com/49362475/102022934-448ffb80-3d8a-11eb-8948-3a10d190162a.jpg)
 
@@ -59,7 +60,7 @@ from mtgscan.ocr import Azure
 azure = Azure()
 rec = MagicRecognition()
 azure.image_to_box_texts("https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large")
-deck = rec.ocr_to_deck(azure.box_texts)
+deck = rec.box_texts_to_deck(azure.box_texts)
 print(deck)
 ```
 

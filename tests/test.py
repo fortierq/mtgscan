@@ -9,8 +9,8 @@ import mtgscan.text
 
 FORMAT = "[%(asctime)s %(filename)s:%(lineno)s:%(funcName)s()] %(message)s"
 DIR_SAMPLES = Path(__file__).parent / "samples"
-text_rec = mtgscan.text.MagicRecognition()
-ocr_all = [mtgscan.ocr.AzureOCR()]
+rec = mtgscan.text.MagicRecognition()
+ocr_all = [mtgscan.ocr.Azure()]
 
 for sample in DIR_SAMPLES.iterdir():
     print(f"- Testing {sample}")
@@ -40,13 +40,18 @@ for sample in DIR_SAMPLES.iterdir():
             ocr.box_texts.save(ocr_path/"box_texts.txt")
         else:
             ocr.box_texts.load(ocr_path/"box_texts.txt")
-        deck_ocr = text_rec.box_texts_to_stacked_cards(ocr.box_texts)
+        ocr.box_texts.save_image(sample/image, ocr_path/f"ocr{Path(image).suffix}")
+
+        box_cards = rec.box_texts_to_cards(ocr.box_texts)
+        rec.assign_stacked(ocr.box_texts, box_cards)
+        box_cards.save_image(sample/image, ocr_path/f"cards{Path(image).suffix}")
+
+        deck_ocr = rec.box_texts_to_deck(ocr.box_texts)
         deck_ocr.save(ocr_path/"deck.txt")
-        ocr.box_texts.save_image(sample/image, ocr_path/image)
         deck = mtgscan.deck.Deck()
         deck.load(sample/"deck.txt")
         print(f"Number of cards found: {len(deck)}")
         diff = deck.diff(deck_ocr)
         print(f"Errors: {diff} (last: {errors_last})")
         with open(ocr_path/"errors.txt", "a") as f:
-            f.write(f"({datetime.now().strftime('%Y-%m-%d %H:%M:%S')}) {diff}")
+            f.write(f"({datetime.now().strftime('%Y-%m-%d %H:%M:%S')}) {diff}\n")

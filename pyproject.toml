@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mtgscan"
-version = "1.0.0"
+version = "1.1.0"
 description = "Convert an image of Magic cards to decklist"
 authors = ["fortierq <qpfortier@gmail.com>"]
 license = "MIT"
@@ -9,7 +9,6 @@ license = "MIT"
 python = "^3.8"
 symspellpy = "^6.7.0"
 requests = "^2.25.0"
-numpy = "^1.19.4"
 matplotlib = "^3.3.3"
 
 [tool.poetry.dev-dependencies]
