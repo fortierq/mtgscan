@@ -37,12 +37,12 @@ for sample in DIR_SAMPLES.iterdir():
             errors_last = float("inf")
         if not (ocr_path/"box_texts.txt").is_file():
             ocr.image_to_box_texts(sample/image)
-            ocr.save_box_texts(ocr_path/"box_texts.txt")
+            ocr.box_texts.save(ocr_path/"box_texts.txt")
         else:
-            ocr.load_box_texts(ocr_path/"box_texts.txt")
-        deck_ocr = text_rec.ocr_to_deck(ocr.box_texts)
+            ocr.box_texts.load(ocr_path/"box_texts.txt")
+        deck_ocr = text_rec.box_texts_to_stacked_cards(ocr.box_texts)
         deck_ocr.save(ocr_path/"deck.txt")
-        ocr.save_box_texts_image(sample/image, ocr_path/image)
+        ocr.box_texts.save_image(sample/image, ocr_path/image)
         deck = mtgscan.deck.Deck()
         deck.load(sample/"deck.txt")
         print(f"Number of cards found: {len(deck)}")

@@ -1,12 +1,14 @@
 import json
 import logging
 import re
+from functools import partial
 from pathlib import Path
 
 import requests
 from symspellpy import SymSpell, Verbosity, editdistance
 
-import mtgscan.deck
+from mtgscan.box_text import BoxTextList
+from mtgscan.deck import Deck, Pile
 
 DIR_DATA = Path("data")
 FILE_ALL_CARDS = DIR_DATA / "all_cards.txt"
@@ -24,12 +26,10 @@ class MagicRecognition:
     def __init__(self, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2):
         self.max_ratio_diff = max_ratio_diff
         self.max_ratio_diff_keyword = max_ratio_diff_keyword
-
         Path.mkdir(DIR_DATA, parents=True, exist_ok=True)
 
         if not Path(FILE_ALL_CARDS).is_file():
             all_cards_json = load_json(URL_ALL_CARDS)
-
             with FILE_ALL_CARDS.open("a") as f:
                 for card in all_cards_json["data"].keys():
                     i = card.find(" //")
@@ -61,62 +61,65 @@ class MagicRecognition:
         for k in keywords:
             self.sym_keywords.create_dictionary_entry(k, 1)
 
-    def preprocess(self, text):
+    @staticmethod
+    def preprocess(text):
         return re.sub("[^a-zA-Z',. ]", '', text).rstrip(' ')
 
-    def preprocess_texts(self, box_texts):
+    def preprocess_texts(self, box_texts: BoxTextList) -> None:
         for box_text in box_texts:
-            box_text[1] = self.preprocess(box_text[1])
+            box_text.text = self.preprocess(box_text.text)
 
-    def ocr_to_deck(self, box_texts):
-        multipliers = [[], []]
-        box_texts.sort()
-        boxes, cards = [], []
-        for box, text in box_texts:
-            if len(text) == 2:
-                for i in [0, 1]:
-                    if text[i] in '×xX' and text[1 - i].isnumeric():
-                        multipliers[i].append((box, int(text[1 - i])))
-
+    def box_texts_to_cards(self, box_texts: BoxTextList) -> BoxTextList:
+        box_cards = BoxTextList()
+        for box, text, _ in box_texts:
             sug = self.sym_keywords.lookup(text, Verbosity.CLOSEST,
                                            max_edit_distance=min(3, int(self.max_ratio_diff_keyword*len(text))))
             if sug != []:
-                logging.info(
-                    f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
+                logging.info(f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
             else:
                 card = self.search(self.preprocess(text))
                 if card is not None:
-                    boxes.append(box)
-                    cards.append([card, 1])
+                    box_cards.add(box, card)
+        return box_cards
 
-        def multiplier_to_card(mult, comp):
+    @staticmethod
+    def assign_stacked(box_texts: BoxTextList, box_cards: BoxTextList) -> None:
+        def assign_stacked_one(box_cards: BoxTextList, m: int, comp) -> None:
             i_min = 0
-            for i in range(1, len(cards)):
-                if comp(boxes[i], boxes[i_min]):
+            for i in range(len(box_cards)):
+                if comp(box_cards[i].box, box_cards[i_min].box):
                     i_min = i
-            cards[i_min][1] = m[1]
-            logging.info(f"{cards[i_min][0]} assigned to x{m[1]}")
+            box_cards[i_min].n = m
+            logging.info(f"{box_cards[i_min].text} assigned to x{m}")
 
-        def dist(p, q):
+        def dist(p: tuple, q: tuple) -> float:
             return (p[0] - q[0])**2 + (p[1] - q[1])**2
+        
+        def comp_md(box1: tuple, box2: tuple, box: tuple) -> float:
+            return dist(box, box1) < dist(box, box2)
 
-        for m in multipliers[0]:  # maindeck
-            def comp(box1, box2):
-                if box1[0] > m[0][0] or box1[1] > m[0][1]:
-                    return False
-                return dist(m[0], box1) < dist(m[0], box2)
-            multiplier_to_card(m, comp)
+        def comp_sb(box1: tuple, box2: tuple, box: tuple) -> float:
+            if box1[0] > box[0] or box1[1] > box[1]:
+                return False
+            return dist(box, box1) < dist(box, box2)
 
-        for m in multipliers[1]:  # sideboard
-            def comp(box1, box2):
-                return dist(m[0], box1) < dist(m[0], box2)
-            multiplier_to_card(m, comp)
+        comp = (comp_md, comp_sb)
+        for box, text, _ in box_texts:
+            if len(text) == 2:
+                for i in [0, 1]:
+                    if text[i] in '×xX' and text[1 - i].isnumeric():
+                        assign_stacked_one(box_cards, int(text[1 - i]), partial(comp[i], box=box))
 
-        maindeck, sideboard = mtgscan.deck.Pile(), mtgscan.deck.Pile()
-        n_cards = sum(c[1] for c in cards)
+    def box_texts_to_stacked_cards(self, box_texts, image=None):
+        box_texts.sort()
+        box_cards = self.box_texts_to_cards(box_texts)
+        self.assign_stacked(box_texts, box_cards)
+
+        maindeck, sideboard = Pile(), Pile()
+        n_cards = sum(c.n for c in box_cards)
         n_added = 0
         last_main_card = max(60, n_cards - 15)
-        for card, n in cards:
+        for _, card, n in box_cards:
             def add_cards(deck, p):
                 if card in deck.cards:
                     deck.cards[card] += p
@@ -126,7 +129,7 @@ class MagicRecognition:
             add_cards(maindeck, n_added_main)
             add_cards(sideboard, n - n_added_main)
             n_added += n
-        deck = mtgscan.deck.Deck()
+        deck = Deck()
         deck.maindeck = maindeck
         deck.sideboard = sideboard
         return deck
