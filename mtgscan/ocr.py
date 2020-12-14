@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 import logging
 import os
 import time
@@ -9,9 +8,21 @@ import requests
 from mtgscan.box_text import BoxTextList
 
 
-@dataclass
 class OCR:
-    box_texts: BoxTextList = field(default_factory=BoxTextList)
+    def image_to_box_texts(self, image: str) -> BoxTextList:
+        """Apply OCR on an image containing Magic cards
+
+        Parameters
+        ----------
+        image : str
+            URL or path to an image
+
+        Returns
+        -------
+        BoxTextList
+            Texts and boxes recognized by the OCR
+        """
+        raise NotImplementedError()
 
 
 class Azure(OCR):
@@ -24,7 +35,7 @@ class Azure(OCR):
     def __str__(self):
         return "azure"
 
-    def image_to_box_texts(self, image):
+    def image_to_box_texts(self, image: str) -> BoxTextList:
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         json, data = None, None
         parsed = urlparse(str(image))
@@ -49,6 +60,7 @@ class Azure(OCR):
                 poll = False
             if "status" in analysis and analysis['status'] == 'failed':
                 poll = False
-        self.box_texts = BoxTextList()
+        box_texts = BoxTextList()
         for line in analysis["analyzeResult"]["readResults"][0]["lines"]:
-            self.box_texts.add(line["boundingBox"], line["text"])
+            box_texts.add(line["boundingBox"], line["text"])
+        return box_texts

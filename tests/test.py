@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+from mtgscan.box_text import BoxTextList
 from pathlib import Path
 
 import mtgscan
@@ -35,18 +36,19 @@ for sample in DIR_SAMPLES.iterdir():
                 errors_last = int(f.readlines()[-1].split(' ')[-1])
         except (FileNotFoundError, IndexError):
             errors_last = float("inf")
+        box_texts = BoxTextList()
         if not (ocr_path/"box_texts.txt").is_file():
-            ocr.image_to_box_texts(sample/image)
-            ocr.box_texts.save(ocr_path/"box_texts.txt")
+            box_texts = ocr.image_to_box_texts(sample/image)
+            box_texts.save(ocr_path/"box_texts.txt")
         else:
-            ocr.box_texts.load(ocr_path/"box_texts.txt")
-        ocr.box_texts.save_image(sample/image, ocr_path/f"ocr{Path(image).suffix}")
+            box_texts.load(ocr_path/"box_texts.txt")
+        box_texts.save_image(sample/image, ocr_path/f"ocr{Path(image).suffix}")
 
-        box_cards = rec.box_texts_to_cards(ocr.box_texts)
-        rec.assign_stacked(ocr.box_texts, box_cards)
+        box_cards = rec.box_texts_to_cards(box_texts)
+        rec.assign_stacked(box_texts, box_cards)
         box_cards.save_image(sample/image, ocr_path/f"cards{Path(image).suffix}")
 
-        deck_ocr = rec.box_texts_to_deck(ocr.box_texts)
+        deck_ocr = rec.box_texts_to_deck(box_texts)
         deck_ocr.save(ocr_path/"deck.txt")
         deck = mtgscan.deck.Deck()
         deck.load(sample/"deck.txt")

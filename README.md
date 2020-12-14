@@ -31,7 +31,7 @@ Steps:
 - Create a Computer Vision resource: https://portal.azure.com/#create/Microsoft.CognitiveServicesComputerVision
 - Get your key and endpoint
 
-## Tests
+## (Non-regression) Tests
 
 Every test case is stored in a separated folder in tests/samples/ containing:
 - image.*: image of Magic cards
@@ -43,7 +43,7 @@ poetry run python tests/test.py
 ```
 
 This produces the following outputs, for each sample and OCR:
-- print statistics about number of cards found, number of errors...
+- statistics about number of cards found, number of errors...
 - test.log: informations about the run
 - errors.txt: history of the number of errors made by the OCR
 - box_texts.txt: output of the OCR
@@ -59,8 +59,8 @@ from mtgscan.ocr import Azure
 
 azure = Azure()
 rec = MagicRecognition()
-azure.image_to_box_texts("https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large")
-deck = rec.box_texts_to_deck(azure.box_texts)
+box_texts = azure.image_to_box_texts("https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large")
+deck = rec.box_texts_to_deck(box_texts)
 print(deck)
 ```
 
