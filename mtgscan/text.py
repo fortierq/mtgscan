@@ -16,7 +16,6 @@ URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"
 FILE_KEYWORDS = DIR_DATA / "Keywords.json"
 URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
 
-
 def load_json(url):
     print(f"Loading {url}")
     r = requests.get(url)
@@ -25,7 +24,16 @@ def load_json(url):
 
 class MagicRecognition:
 
-    def __init__(self, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2):
+    def __init__(self, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
+        """Load cards and keywords in memory
+
+        Parameters
+        ----------
+        max_ratio_diff : float, optional
+            Maximum ratio (distance/length) for a text to be considered as a card name, by default 0.3
+        max_ratio_diff_keyword : float, optional
+            Maximum ratio (distance/length) for a text to be considered as a (ignored) keyword, by default 0.2
+        """
         self.max_ratio_diff = max_ratio_diff
         self.max_ratio_diff_keyword = max_ratio_diff_keyword
         Path.mkdir(DIR_DATA, parents=True, exist_ok=True)
@@ -63,22 +71,24 @@ class MagicRecognition:
         for k in keywords:
             self.sym_keywords.create_dictionary_entry(k, 1)
 
-    def preprocess(self, text):
+    def preprocess(self, text: str) -> str:
+        """Remove characters which can't appear on a Magic card (OCR error)"""
         return re.sub("[^a-zA-Z',. ]", '', text).rstrip(' ')
 
     def preprocess_texts(self, box_texts: BoxTextList) -> None:
+        """Apply `preprocess` on each text"""
         for box_text in box_texts:
             box_text.text = self.preprocess(box_text.text)
 
     def box_texts_to_cards(self, box_texts: BoxTextList) -> BoxTextList:
+        """Recognize cards from raw texts"""
         box_texts.sort()
         box_cards = BoxTextList()
         for box, text, _ in box_texts:
             sug = self.sym_keywords.lookup(text, Verbosity.CLOSEST,
                                            max_edit_distance=min(3, int(self.max_ratio_diff_keyword*len(text))))
             if sug != []:
-                logging.info(
-                    f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
+                logging.info(f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
             else:
                 card = self.search(self.preprocess(text))
                 if card is not None:
@@ -86,6 +96,15 @@ class MagicRecognition:
         return box_cards
 
     def assign_stacked(self, box_texts: BoxTextList, box_cards: BoxTextList) -> None:
+        """Set multipliers (e.g. x4) for each (stacked) card in `box_cards`
+
+        Parameters
+        ----------
+        box_texts : BoxTextList
+            BoxTextList containing potential multipliers
+        box_cards : BoxTextList
+            BoxTextList containing recognized cards
+        """
         def assign_stacked_one(box_cards: BoxTextList, m: int, comp) -> None:
             i_min = 0
             for i, box_card in enumerate(box_cards):
@@ -113,35 +132,49 @@ class MagicRecognition:
                         assign_stacked_one(box_cards, int(
                             text[1 - i]), partial(comp[i], box=box))
 
-    def box_cards_to_deck(self, box_cards):
+    def box_cards_to_deck(self, box_cards: BoxTextList) -> Deck:
+        """Convert recognized cards to decklist"""
         maindeck, sideboard = Pile(), Pile()
         n_cards = sum(c.n for c in box_cards)
         n_added = 0
         last_main_card = max(60, n_cards - 15)
         for _, card, n in box_cards:
-            def add_cards(deck, p):
-                if card in deck.cards:
-                    deck.cards[card] += p
+            def add_cards(c, deck, p):
+                if c in deck.cards:
+                    deck.cards[c] += p
                 elif p > 0:
-                    deck.cards[card] = p
+                    deck.cards[c] = p
             n_added_main = max(min(n, last_main_card - n_added), 0)
-            add_cards(maindeck, n_added_main)
-            add_cards(sideboard, n - n_added_main)
+            add_cards(card, maindeck, n_added_main)
+            add_cards(card, sideboard, n - n_added_main)
             n_added += n
         deck = Deck()
         deck.maindeck = maindeck
         deck.sideboard = sideboard
         return deck
 
-    def box_texts_to_deck(self, box_texts):
+    def box_texts_to_deck(self, box_texts: BoxTextList) -> Deck:
+        """Convert raw texts to decklist
+
+        Parameters
+        ----------
+        box_texts : BoxTextList
+            Raw texts given by an OCR
+
+        Returns
+        -------
+        Deck
+            Decklist obtained from `box_texts`
+        """
         box_cards = self.box_texts_to_cards(box_texts)
         self.assign_stacked(box_texts, box_cards)
         return self.box_cards_to_deck(box_cards)
 
     def search(self, text):
-        if len(text) < 3:
+        """If `text` can be recognized as a Magic card, return that card. Otherwise, return None."""
+        if len(text) < 3:  # a card name is never that short
             return None
-        if len(text) > 30:  # assume card text
+        if len(text) > 30:  # a card name is never that long
             logging.info(f"Too long: {text}")
             return None
         if text in self.all_cards:
@@ -170,8 +203,7 @@ class MagicRecognition:
                 if len(text) < len(card) + 7:
                     logging.info(f"Corrected: {text} {ratio} {card}")
                     return card
-                logging.info(
-                    f"Not corrected (too long): {text} {ratio} {card}")
+                logging.info(f"Not corrected (too long): {text} {ratio} {card}")
             else:
                 logging.info(f"Not found: {text}")
         return None

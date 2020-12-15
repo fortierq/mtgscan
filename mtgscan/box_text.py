@@ -7,8 +7,8 @@ from matplotlib.lines import Line2D
 @dataclass
 class BoxText:
     box: tuple  # (x, y, ...) with (x, y) the bottom-left vertex
-    text: str
-    n: int = 1
+    text: str   # text, presumably a card name
+    n: int = 1  # number of occurences of the card
 
     def __iter__(self):
         yield from (self.box, self.text, self.n)
@@ -17,22 +17,24 @@ class BoxText:
 class BoxTextList:
     box_texts: list = field(default_factory=list)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.box_texts)
 
     def __iter__(self):
         yield from self.box_texts
 
-    def __getitem__(self, i):
+    def __getitem__(self, i) -> BoxText:
         return self.box_texts[i]
 
-    def add(self, box, text, n=1):
+    def add(self, box, text, n=1) -> None:
         self.box_texts.append(BoxText(box, text, n))
 
-    def sort(self):
+    def sort(self) -> None:
+        """Sort boxes by lexicographic order"""
         self.box_texts.sort(key=lambda box_text: box_text.box)
 
     def save(self, file):
+        """Save box_texts to `file`"""
         logging.info(f"Save box_texts to {file}")
         with open(file, "w") as f:
             for box, text, _ in self.box_texts:
@@ -42,6 +44,7 @@ class BoxTextList:
                 f.write("\n")
 
     def load(self, file):
+        """Load box_texts from `file`"""
         logging.info(f"Load box_texts from {file}")
         self.box_texts = []
         with open(file, "r") as f:
@@ -53,6 +56,15 @@ class BoxTextList:
                 self.add(tuple(map(int, box.split(" "))), text, 1)
 
     def save_image(self, image_in, image_out):
+        """Add boxes to `image_in` and save it in `image_out`
+
+        Parameters
+        ----------
+        image_in : str
+            Path to original image
+        image_out : str
+            Path to the image to be saved
+        """
         logging.info(f"Save box_texts image to {image_out}")
         img = plt.imread(image_in, image_out)
         fig, ax = plt.subplots(figsize=(img.shape[1]//64, img.shape[0]//64))
