@@ -106,3 +106,7 @@ Output:
 - Tested on MTGO, Arena and IRL (simple) images
 - Handle sideboard (only on the right side)  
 - Support for stacked cards
+
+## TODO
+- Add and compare OCR (GCP, AWS...)
+- Add Twitter bot and web service
