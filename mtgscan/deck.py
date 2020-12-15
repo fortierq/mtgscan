@@ -1,20 +1,24 @@
 import logging
+from dataclasses import dataclass, field
+from typing import Iterable
 
+
+@dataclass
 class Pile:
-    def __init__(self):
-        self.cards = dict()
+    cards: dict = field(default_factory=dict)
 
-    def add_card(self, card):
+    def add_card(self, card: str) -> None:
         if card in self.cards:
             self.cards[card] += 1
         else:
             self.cards[card] = 1
 
-    def add_cards(self, cards):
+    def add_cards(self, cards: Iterable) -> None:
         for c in cards:
             self.add_card(c)
 
-    def diff(self, other):
+    def diff(self, other) -> int:
+        """Return the number of different cards between self and other"""
         res = 0
         for card in self.cards:
             n, p = self.cards[card], 0
@@ -43,10 +47,11 @@ class Pile:
     def __len__(self):
         return sum(self.cards[c] for c in self.cards)
 
+
+@dataclass
 class Deck:
-    def __init__(self):
-        self.maindeck = Pile()
-        self.sideboard = Pile()
+    maindeck: Pile = field(default_factory=Pile)
+    sideboard: Pile = field(default_factory=Pile)
 
     def __str__(self):
         if len(self.sideboard) == 0:
@@ -56,22 +61,22 @@ class Deck:
     def __len__(self):
         return len(self.maindeck) + len(self.sideboard)
 
-    def add_card(self, card, in_sideboard):
+    def add_card(self, card: str, in_sideboard: bool) -> None:
         if in_sideboard:
             self.sideboard.add_card(card)
         else:
             self.maindeck.add_card(card)
 
-    def add_cards(self, cards, in_sideboard):
+    def add_cards(self, cards: Iterable, in_sideboard: bool) -> None:
         for card in cards:
             self.add_card(card, in_sideboard)
 
-    def save(self, file):
+    def save(self, file: str) -> None:
         logging.info(f"Saving {file}")
         with open(file, "w") as f:
             f.write(str(self))
 
-    def load(self, file):
+    def load(self, file: str) -> None:
         logging.info(f"Loading {file}")
         with open(file, "r") as f:
             in_sideboard = False
@@ -88,4 +93,5 @@ class Deck:
                         logging.warning(f"Can't read {line}")
 
     def diff(self, other):
+        """Return the number of different cards between self and other"""
         return self.maindeck.diff(other.maindeck) + self.sideboard.diff(other.sideboard)
