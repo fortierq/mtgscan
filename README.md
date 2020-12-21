@@ -15,8 +15,16 @@ After OCR, cards are looked up in a dictionnary provided by MTGJSON (https://mtg
 
 ## Installation
 
+### From source
+
 ```python
 poetry install
+```
+
+### From pip
+
+```console
+pip install mtgscan
 ```
 
 ## OCR
@@ -100,6 +108,7 @@ Output:
 4 Leyline of the Void
 2 Crucible of Worlds
 4 Pithing Needle
+2 Wurmcoil Engine
 ```
 
 ## Features

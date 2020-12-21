@@ -27,11 +27,14 @@ class OCR:
 
 class Azure(OCR):
     def __init__(self):
-        self.subscription_key = os.environ['AZURE_VISION_KEY']
-        self.text_recognition_url = os.environ['AZURE_VISION_ENDPOINT'] + \
-            "/vision/v3.1/read/analyze"
-        super().__init__()
-
+        try:
+            self.subscription_key = os.environ['AZURE_VISION_KEY']
+            self.text_recognition_url = os.environ['AZURE_VISION_ENDPOINT'] + \
+                "/vision/v3.1/read/analyze"
+        except IndexError as e:
+            print(str(e))
+            print("Azure credentials must be stored in environment variables AZURE_VISION_KEY and AZURE_VISION_ENDPOINT")
+            
     def __str__(self):
         return "azure"
 
