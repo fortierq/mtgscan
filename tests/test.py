@@ -45,7 +45,7 @@ for sample in DIR_SAMPLES.iterdir():
         box_texts.save_image(sample/image, ocr_path/f"ocr{Path(image).suffix}")
 
         box_cards = rec.box_texts_to_cards(box_texts)
-        rec.assign_stacked(box_texts, box_cards)
+        rec._assign_stacked(box_texts, box_cards)
         box_cards.save_image(sample/image, ocr_path/f"cards{Path(image).suffix}")
 
         deck_ocr = rec.box_texts_to_deck(box_texts)

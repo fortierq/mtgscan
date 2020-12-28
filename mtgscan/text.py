@@ -71,14 +71,14 @@ class MagicRecognition:
         for k in keywords:
             self.sym_keywords.create_dictionary_entry(k, 1)
 
-    def preprocess(self, text: str) -> str:
+    def _preprocess(self, text: str) -> str:
         """Remove characters which can't appear on a Magic card (OCR error)"""
         return re.sub("[^a-zA-Z',. ]", '', text).rstrip(' ')
 
-    def preprocess_texts(self, box_texts: BoxTextList) -> None:
+    def _preprocess_texts(self, box_texts: BoxTextList) -> None:
         """Apply `preprocess` on each text"""
         for box_text in box_texts:
-            box_text.text = self.preprocess(box_text.text)
+            box_text.text = self._preprocess(box_text.text)
 
     def box_texts_to_cards(self, box_texts: BoxTextList) -> BoxTextList:
         """Recognize cards from raw texts"""
@@ -90,12 +90,12 @@ class MagicRecognition:
             if sug != []:
                 logging.info(f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
             else:
-                card = self.search(self.preprocess(text))
+                card = self._search(self._preprocess(text))
                 if card is not None:
                     box_cards.add(box, card)
         return box_cards
 
-    def assign_stacked(self, box_texts: BoxTextList, box_cards: BoxTextList) -> None:
+    def _assign_stacked(self, box_texts: BoxTextList, box_cards: BoxTextList) -> None:
         """Set multipliers (e.g. x4) for each (stacked) card in `box_cards`
 
         Parameters
@@ -105,7 +105,7 @@ class MagicRecognition:
         box_cards : BoxTextList
             BoxTextList containing recognized cards
         """
-        def assign_stacked_one(box_cards: BoxTextList, m: int, comp) -> None:
+        def _assign_stacked_one(box_cards: BoxTextList, m: int, comp) -> None:
             i_min = 0
             for i, box_card in enumerate(box_cards):
                 if comp(box_card.box, box_cards[i_min].box):
@@ -129,10 +129,10 @@ class MagicRecognition:
             if len(text) == 2:
                 for i in [0, 1]:
                     if text[i] in '×xX' and text[1 - i].isnumeric():
-                        assign_stacked_one(box_cards, int(
+                        _assign_stacked_one(box_cards, int(
                             text[1 - i]), partial(comp[i], box=box))
 
-    def box_cards_to_deck(self, box_cards: BoxTextList) -> Deck:
+    def _box_cards_to_deck(self, box_cards: BoxTextList) -> Deck:
         """Convert recognized cards to decklist"""
         maindeck, sideboard = Pile(), Pile()
         n_cards = sum(c.n for c in box_cards)
@@ -167,10 +167,10 @@ class MagicRecognition:
             Decklist obtained from `box_texts`
         """
         box_cards = self.box_texts_to_cards(box_texts)
-        self.assign_stacked(box_texts, box_cards)
-        return self.box_cards_to_deck(box_cards)
+        self._assign_stacked(box_texts, box_cards)
+        return self._box_cards_to_deck(box_cards)
 
-    def search(self, text):
+    def _search(self, text):
         """If `text` can be recognized as a Magic card, return that card. Otherwise, return None."""
         if len(text) < 3:  # a card name is never that short
             return None
