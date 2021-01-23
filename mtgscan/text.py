@@ -10,11 +10,6 @@ from symspellpy import SymSpell, Verbosity, editdistance
 from mtgscan.box_text import BoxTextList
 from mtgscan.deck import Deck, Pile
 
-DIR_DATA = Path("data")
-FILE_ALL_CARDS = DIR_DATA / "all_cards.txt"
-URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"
-FILE_KEYWORDS = DIR_DATA / "Keywords.json"
-URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
 
 def load_json(url):
     print(f"Loading {url}")
@@ -24,7 +19,7 @@ def load_json(url):
 
 class MagicRecognition:
 
-    def __init__(self, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
+    def __init__(self, file_all_cards, file_keywords, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
         """Load cards and keywords in memory
 
         Parameters
@@ -36,40 +31,31 @@ class MagicRecognition:
         """
         self.max_ratio_diff = max_ratio_diff
         self.max_ratio_diff_keyword = max_ratio_diff_keyword
-        Path.mkdir(DIR_DATA, parents=True, exist_ok=True)
 
-        if not Path(FILE_ALL_CARDS).is_file():
-            all_cards_json = load_json(URL_ALL_CARDS)
-            with FILE_ALL_CARDS.open("a") as f:
-                for card in all_cards_json["data"].keys():
-                    i = card.find(" //")
-                    if i != -1:
-                        card = card[:i]
-                    f.write(card + "$1\n")
+        assert Path(file_all_cards).is_file()
 
         self.sym_all_cards = SymSpell(max_dictionary_edit_distance=6)
         self.sym_all_cards._distance_algorithm = editdistance.DistanceAlgorithm.LEVENSHTEIN
-        self.sym_all_cards.load_dictionary(FILE_ALL_CARDS, 0, 1, separator="$")
+        self.sym_all_cards.load_dictionary(file_all_cards, 0, 1, separator="$")
         self.all_cards = self.sym_all_cards._words
-        print(f"Loaded {FILE_ALL_CARDS}: {len(self.all_cards)} cards")
+        print(f"Loaded {file_all_cards}: {len(self.all_cards)} cards")
         self.edit_dist = editdistance.EditDistance(
             editdistance.DistanceAlgorithm.LEVENSHTEIN)
 
-        if not Path(FILE_KEYWORDS).is_file():
-            keywords = load_json(URL_KEYWORDS)
-            json.dump(keywords, FILE_KEYWORDS.open("w"))
+        assert Path(file_keywords).is_file()
 
         def concat_lists(LL):
             res = []
             for L in LL:
                 res.extend(L)
             return res
-        keywords_json = json.load(FILE_KEYWORDS.open())
+        keywords_json = json.load(file_keywords.open())
         keywords = concat_lists(keywords_json["data"].values())
         keywords.extend(["Display", "Land", "Search", "Profile"])
         self.sym_keywords = SymSpell(max_dictionary_edit_distance=3)
         for k in keywords:
             self.sym_keywords.create_dictionary_entry(k, 1)
+        print(f"Loaded {file_keywords}: {len(keywords)} cards")
 
     def preprocess(self, text: str) -> str:
         """Remove characters which can't appear on a Magic card (OCR error)"""

@@ -62,11 +62,12 @@ Let's compute the decklist from the following image:
 ![alt text](https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large)
 
 ```python
+from pathlib import Path
 from mtgscan.text import MagicRecognition
 from mtgscan.ocr import Azure
 
 azure = Azure()
-rec = MagicRecognition()
+rec = MagicRecognition(file_all_cards="/home/qfortier/Code/mtgscan/all_cards.txt", file_keywords=Path("/home/qfortier/Code/mtgscan/Keywords.json"))
 box_texts = azure.image_to_box_texts("https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large")
 deck = rec.box_texts_to_deck(box_texts)
 print(deck)
