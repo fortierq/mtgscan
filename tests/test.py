@@ -1,11 +1,11 @@
 from datetime import datetime
 import logging
+import mtgscan
 from mtgscan.box_text import BoxTextList
 from pathlib import Path
 
-import mtgscan
 import mtgscan.deck
-import mtgscan.ocr
+from mtgscan.ocr.azure import Azure
 import mtgscan.text
 
 DIR_DATA = Path(__file__).parents[1]
@@ -17,7 +17,7 @@ URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
 FORMAT = "[%(asctime)s %(filename)s:%(lineno)s:%(funcName)s()] %(message)s"
 DIR_SAMPLES = Path(__file__).parent / "samples"
 rec = mtgscan.text.MagicRecognition(FILE_ALL_CARDS, FILE_KEYWORDS, max_ratio_diff=0.25)
-ocr_all = [mtgscan.ocr.Azure()]
+ocr_all = [Azure()]
 
 
 for sample in DIR_SAMPLES.iterdir():

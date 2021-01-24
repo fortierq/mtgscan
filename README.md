@@ -61,7 +61,7 @@ This produces the following outputs, for each sample and OCR:
 ## Basic usage
 
 Let's compute the decklist from the following image:
-![alt text](https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large)
+![alt text](https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg)
 
 ```python
 from pathlib import Path
@@ -70,7 +70,7 @@ from mtgscan.ocr import Azure
 
 azure = Azure()
 rec = MagicRecognition(file_all_cards="/home/qfortier/Code/mtgscan/all_cards.txt", file_keywords=Path("/home/qfortier/Code/mtgscan/Keywords.json"))
-box_texts = azure.image_to_box_texts("https://pbs.twimg.com/media/ElGwm4bXgAAr7zp?format=jpg&name=large")
+box_texts = azure.image_to_box_texts("https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg")
 deck = rec.box_texts_to_deck(box_texts)
 print(deck)
 ```
