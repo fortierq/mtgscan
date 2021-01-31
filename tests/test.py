@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 DIR_DATA = Path(__file__).parents[1]
-sys.path.insert(0, str(DIR_DATA))
+sys.path.insert(0, str(DIR_DATA / "mtgscan"))
 import mtgscan.deck
 from mtgscan.ocr.azure import Azure
 import mtgscan.text
