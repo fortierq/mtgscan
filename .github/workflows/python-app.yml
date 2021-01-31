@@ -32,7 +32,8 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test
+      env:
+        AZURE_VISION_KEY: ${{ secrets.AZURE_VISION_KEY }}
+        AZURE_VISION_ENDPOINT: ${{ secrets.AZURE_VISION_ENDPOINT }}
       run: |
-        export AZURE_VISION_KEY=${{ secrets.AZURE_VISION_KEY }}
-        export AZURE_VISION_ENDPOINT=${{ secrets.AZURE_VISION_ENDPOINT }}
-        run python tests/test.py
+        python tests/test.py
