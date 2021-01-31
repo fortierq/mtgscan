@@ -1,11 +1,12 @@
 import logging
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Iterable
 
 
 @dataclass
 class Pile:
-    cards: dict = field(default_factory=dict)
+    cards: Counter = field(default_factory=Counter)
 
     def add_card(self, card: str) -> None:
         if card in self.cards:
