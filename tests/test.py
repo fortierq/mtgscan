@@ -3,12 +3,14 @@ import logging
 import mtgscan
 from mtgscan.box_text import BoxTextList
 from pathlib import Path
+import sys
 
+DIR_DATA = Path(__file__).parents[1]
+sys.path.insert(0, str(DIR_DATA))
 import mtgscan.deck
 from mtgscan.ocr.azure import Azure
 import mtgscan.text
 
-DIR_DATA = Path(__file__).parents[1]
 FILE_ALL_CARDS = DIR_DATA / "all_cards.txt"
 URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"
 FILE_KEYWORDS = DIR_DATA / "Keywords.json"
