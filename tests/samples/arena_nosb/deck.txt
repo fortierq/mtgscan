@@ -1,25 +1,20 @@
-4 Edgewall Innkeeper
-2 Primal Might
-2 Scorching Dragonfire
-3 Scavenging Ooze
-4 Brushfire Elemental
-4 Shatterskull Smashing
-4 Lovestruck Beast
-4 Kazandu Mammoth
-4 Bonecrusher Giant
-2 Questing Beast
-3 Embercleave
-2 The Great Henge
-4 Fabled Passage
-4 Cragcrown Pathway
-2 Evolving Wilds
-3 Mountain
-9 Forest
-
-2 Scorching Dragonfire
-2 Klothys, God of Destiny
-2 The Akroan War
-2 Vivien, Monsters' Advocate
-3 Ox of Agonas
-2 Embereth Shieldbreaker
-2 Garruk, Unleashed
+4 Neoform
+3 Opt
+2 Pact of Negation
+4 Sea Gate Stormcaller
+4 Shimmer of Possibility
+3 Fire Prophecy
+3 Wall of Blossoms
+1 Combat Celebrant
+2 Uro, Titan of Nature's Wrath
+2 Tuktuk Rubblefort
+3 Brazen Borrower
+4 Glasspool Mimic
+2 Valakut Awakening
+4 Dualcaster Mage
+3 Hinterland Harbor
+4 Stomping Ground
+2 Cragcrown Pathway
+2 Riverglide Pathway
+4 Steam Vents
+4 Breeding Pool
