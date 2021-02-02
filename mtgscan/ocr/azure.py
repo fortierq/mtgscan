@@ -20,7 +20,7 @@ class Azure(OCR):
             print("Azure credentials must be stored in environment variables AZURE_VISION_KEY and AZURE_VISION_ENDPOINT")
 
     def __str__(self):
-        return "azure"
+        return "Azure"
 
     def image_to_box_texts(self, image: str) -> BoxTextList:
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
