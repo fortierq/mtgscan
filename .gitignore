@@ -1,7 +1,7 @@
 .vscode/
 *workspace*
 azure/
-*.json
+**/samples/**
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -142,3 +142,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 data/all_cards.txt
+run.sh

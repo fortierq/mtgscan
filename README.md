@@ -12,18 +12,23 @@ Try it online: [https://qfmtgscanapp.azurewebsites.net](https://qfmtgscanapp.azu
 ## Prerequisites
 
 - Python >= 3.7
-- Poetry: https://python-poetry.org/
 - Credentials for the required OCR (e.g Azure Computer Vision Read API)
 
 ## Installation
 
-### From source
+### ... with Poetry
 
 ```python
 poetry install
 ```
 
-### From pip
+### ... with requirements
+
+```python
+pip install -r requirements.txt
+```
+
+### ...  with pip
 
 ```console
 pip install mtgscan
@@ -69,7 +74,7 @@ from mtgscan.text import MagicRecognition
 from mtgscan.ocr import Azure
 
 azure = Azure()
-rec = MagicRecognition(file_all_cards="/home/qfortier/Code/mtgscan/all_cards.txt", file_keywords=Path("/home/qfortier/Code/mtgscan/Keywords.json"))
+rec = MagicRecognition(file_all_cards="path/to/all_cards.txt", file_keywords=Path("path/to/Keywords.json"))
 box_texts = azure.image_to_box_texts("https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg")
 deck = rec.box_texts_to_deck(box_texts)
 print(deck)
