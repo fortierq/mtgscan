@@ -46,7 +46,7 @@ Steps:
 - Create a Computer Vision resource: https://portal.azure.com/#create/Microsoft.CognitiveServicesComputerVision
 - Get your key and endpoint
 
-## (Non-regression) Tests
+## Tests
 
 Every test case is stored in a separated folder in tests/samples/ containing:
 - image.*: image of Magic cards
@@ -65,8 +65,8 @@ This produces the following outputs, for each sample and OCR:
 
 ## Basic usage
 
-Let's compute the decklist from the following image:
-![alt text](https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg)
+Let's compute the decklist from the following screenshot:
+![Screenshot](https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg)
 
 ```python
 from pathlib import Path
