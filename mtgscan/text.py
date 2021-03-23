@@ -23,7 +23,7 @@ def load_json(url):
 
 
 class MagicRecognition:
-    def __init__(self, file_all_cards: str, file_keywords: str, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
+    def __init__(self, file_all_cards: str, file_keywords: str, language=None, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
         """Load dictionnaries of cards and keywords
 
         Parameters
@@ -43,7 +43,11 @@ class MagicRecognition:
         if not Path(file_all_cards).is_file():
             all_cards_json = load_json(URL_ALL_CARDS)
             with Path(file_all_cards).open("a") as f:
-                for card in all_cards_json["data"].keys():
+                for card, l in all_cards_json["data"].items():
+                    if language is not None:  # use foreign language
+                        for e in l[0]["foreignData"]:
+                            if e["language"] == language:
+                                card = e["name"]
                     i = card.find(" //")
                     if i != -1:
                         card = card[:i]
