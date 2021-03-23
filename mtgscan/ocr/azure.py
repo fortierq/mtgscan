@@ -10,13 +10,13 @@ from .ocr import OCR
 
 
 class Azure(OCR):
-    def __init__(self, azure_vision_key, azure_vision_endpoint):
+    def __init__(self, azure_vision_key=os.environ['AZURE_VISION_KEY'], azure_vision_endpoint=os.environ['AZURE_VISION_ENDPOINT']):
         try:
             self.subscription_key = azure_vision_key
             self.text_recognition_url = azure_vision_endpoint + "/vision/v3.1/read/analyze"
         except IndexError as e:
             print(str(e))
-            print("Azure credentials must be stored in environment variables AZURE_VISION_KEY and AZURE_VISION_ENDPOINT")
+            print("Azure credentials should be stored in environment variables AZURE_VISION_KEY and AZURE_VISION_ENDPOINT")
 
     def __str__(self):
         return "Azure"

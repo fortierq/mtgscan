@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-import os
 from pathlib import Path
 import sys
 
@@ -12,16 +11,14 @@ import mtgscan.deck
 from mtgscan.ocr.azure import Azure
 import mtgscan.text
 
-FILE_ALL_CARDS = DIR_DATA / "all_cards.txt"
-URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"
-FILE_KEYWORDS = DIR_DATA / "Keywords.json"
-URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
+FILE_ALL_CARDS = str(DIR_DATA / "all_cards.txt")
+FILE_KEYWORDS = str(DIR_DATA / "Keywords.json")
 
 FORMAT = "[%(asctime)s %(filename)s:%(lineno)s:%(funcName)s()] %(message)s"
 DIR_SAMPLES = Path(__file__).parent / "samples"
 rec = mtgscan.text.MagicRecognition(FILE_ALL_CARDS, FILE_KEYWORDS, max_ratio_diff=0.25)
 ocr_all = [
-    Azure(azure_vision_key=os.environ['AZURE_VISION_KEY'], azure_vision_endpoint=os.environ['AZURE_VISION_ENDPOINT'])
+    Azure()
 ]
 errors = {str(ocr): [] for ocr in ocr_all}
 
