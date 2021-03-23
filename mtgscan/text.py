@@ -10,6 +10,11 @@ from symspellpy import SymSpell, Verbosity, editdistance
 from mtgscan.box_text import BoxTextList
 from mtgscan.deck import Deck, Pile
 
+URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"  # URL to download card list, if needed
+URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
+
+
+
 
 def load_json(url):
     print(f"Loading {url}")
@@ -18,12 +23,15 @@ def load_json(url):
 
 
 class MagicRecognition:
-
-    def __init__(self, file_all_cards, file_keywords, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
-        """Load cards and keywords in memory
+    def __init__(self, file_all_cards: str, file_keywords: str, max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
+        """Load dictionnaries of cards and keywords
 
         Parameters
         ----------
+        file_all_cards: str
+            Path to the file containing all cards. If the file does not exist, it is downloaded from mtgjson.
+        file_keywords: str
+            Path to the file containing all keywords. If the file does not exist, it is downloaded from mtgjson.
         max_ratio_diff : float, optional
             Maximum ratio (distance/length) for a text to be considered as a card name, by default 0.3
         max_ratio_diff_keyword : float, optional
@@ -31,25 +39,34 @@ class MagicRecognition:
         """
         self.max_ratio_diff = max_ratio_diff
         self.max_ratio_diff_keyword = max_ratio_diff_keyword
-
-        assert Path(file_all_cards).is_file()
+        
+        if not Path(file_all_cards).is_file():
+            all_cards_json = load_json(URL_ALL_CARDS)
+            with Path(file_all_cards).open("a") as f:
+                for card in all_cards_json["data"].keys():
+                    i = card.find(" //")
+                    if i != -1:
+                        card = card[:i]
+                    f.write(card + "$1\n")
 
         self.sym_all_cards = SymSpell(max_dictionary_edit_distance=6)
         self.sym_all_cards._distance_algorithm = editdistance.DistanceAlgorithm.LEVENSHTEIN
         self.sym_all_cards.load_dictionary(file_all_cards, 0, 1, separator="$")
         self.all_cards = self.sym_all_cards._words
         print(f"Loaded {file_all_cards}: {len(self.all_cards)} cards")
-        self.edit_dist = editdistance.EditDistance(
-            editdistance.DistanceAlgorithm.LEVENSHTEIN)
+        self.edit_dist = editdistance.EditDistance(editdistance.DistanceAlgorithm.LEVENSHTEIN)
 
-        assert Path(file_keywords).is_file()
+        if not Path(file_keywords).is_file():
+            keywords = load_json(URL_KEYWORDS)
+            json.dump(keywords, Path(file_keywords).open("w"))
 
         def concat_lists(LL):
             res = []
             for L in LL:
                 res.extend(L)
             return res
-        keywords_json = json.load(file_keywords.open())
+
+        keywords_json = json.load(Path(file_keywords).open())
         keywords = concat_lists(keywords_json["data"].values())
         keywords.extend(["Display", "Land", "Search", "Profile"])
         self.sym_keywords = SymSpell(max_dictionary_edit_distance=3)
@@ -71,8 +88,9 @@ class MagicRecognition:
         box_texts.sort()
         box_cards = BoxTextList()
         for box, text, _ in box_texts:
-            sug = self.sym_keywords.lookup(text, Verbosity.CLOSEST,
-                                           max_edit_distance=min(3, int(self.max_ratio_diff_keyword*len(text))))
+            sug = self.sym_keywords.lookup(text,
+                                           Verbosity.CLOSEST,
+                                           max_edit_distance=min(3, int(self.max_ratio_diff_keyword * len(text))))
             if sug != []:
                 logging.info(f"Keyword rejected: {text} {sug[0].distance/len(text)} {sug[0].term}")
             else:
@@ -115,8 +133,7 @@ class MagicRecognition:
             if len(text) == 2:
                 for i in [0, 1]:
                     if text[i] in '×xX' and text[1 - i].isnumeric():
-                        _assign_stacked_one(box_cards, int(
-                            text[1 - i]), partial(comp[i], box=box))
+                        _assign_stacked_one(box_cards, int(text[1 - i]), partial(comp[i], box=box))
 
     def _box_cards_to_deck(self, box_cards: BoxTextList) -> Deck:
         """Convert recognized cards to decklist"""
@@ -125,11 +142,13 @@ class MagicRecognition:
         n_added = 0
         last_main_card = max(60, n_cards - 15)
         for _, card, n in box_cards:
+
             def add_cards(c, deck, p):
                 if c in deck.cards:
                     deck.cards[c] += p
                 elif p > 0:
                     deck.cards[c] = p
+
             n_added_main = max(min(n, last_main_card - n_added), 0)
             add_cards(card, maindeck, n_added_main)
             add_cards(card, sideboard, n - n_added_main)
@@ -181,11 +200,12 @@ class MagicRecognition:
                 return card
         else:
             text = text.replace('.', '').rstrip(' ')
-            sug = self.sym_all_cards.lookup(text, Verbosity.CLOSEST,
+            sug = self.sym_all_cards.lookup(text,
+                                            Verbosity.CLOSEST,
                                             max_edit_distance=min(6, int(self.max_ratio_diff * len(text))))
             if sug != []:
                 card = sug[0].term
-                ratio = sug[0].distance/len(text)
+                ratio = sug[0].distance / len(text)
                 if len(text) < len(card) + 7:
                     logging.info(f"Corrected: {text} {ratio} {card}")
                     return card
