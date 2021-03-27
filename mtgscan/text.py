@@ -14,8 +14,6 @@ URL_ALL_CARDS = "https://mtgjson.com/api/v5/VintageAtomic.json"  # URL to downlo
 URL_KEYWORDS = "https://mtgjson.com/api/v5/Keywords.json"
 
 
-
-
 def load_json(url):
     print(f"Loading {url}")
     r = requests.get(url)
