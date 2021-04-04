@@ -7,7 +7,7 @@
 MTGScan uses OCR recognition to list Magic cards from an image.  
 After OCR, cards are looked up in a dictionnary provided by MTGJSON (https://mtgjson.com), using fuzzy search with SymSpell (https://github.com/wolfgarbe/SymSpell).
 
-Try it online: [https://qfmtgscanapp.azurewebsites.net](https://qfmtgscanapp.azurewebsites.net/) (wait for the app to start - Azure free tier automatically shuts down the app when idle).
+Try it online: [https://qfmtgscanapp.azurewebsites.net](https://qfmtgscanapp.azurewebsites.net/) (wait for the app to start - Azure free tier automatically shuts down the app when idle). Repository for this app: https://github.com/fortierq/mtgscan-app.
 
 ## Prerequisites
 
