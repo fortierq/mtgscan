@@ -1,6 +1,7 @@
 import logging
 from collections import Counter
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Iterable
 
 
@@ -39,6 +40,10 @@ class Pile:
                 res += d
         return res
 
+    def __iadd__(self, other):
+        self.cards += other.cards
+        return self
+
     def __str__(self):
         s = ""
         for card in self.cards:
@@ -62,6 +67,11 @@ class Deck:
     def __len__(self):
         return len(self.maindeck) + len(self.sideboard)
 
+    def __iadd__(self, other):
+        self.maindeck += other.maindeck
+        self.sideboard += other.sideboard
+        return self
+
     def add_card(self, card: str, in_sideboard: bool) -> None:
         if in_sideboard:
             self.sideboard.add_card(card)
@@ -79,7 +89,11 @@ class Deck:
 
     def load(self, file: str) -> None:
         logging.info(f"Loading {file}")
-        with open(file, "r") as f:
+        file = Path(file)
+        if not file.exists():
+            print(f"Can't load file {file}")
+            return
+        with file.open("r") as f:
             in_sideboard = False
             for line in f:
                 if line == "\n":
@@ -88,8 +102,8 @@ class Deck:
                     try:
                         i = line.find(' ')
                         n = int(line[:i])
-                        card = line[i+1:].rstrip()
-                        self.add_cards([card]*n, in_sideboard)
+                        card = line[i + 1:].rstrip()
+                        self.add_cards([card] * n, in_sideboard)
                     except (ValueError, IndexError):
                         logging.warning(f"Can't read {line}")
 
