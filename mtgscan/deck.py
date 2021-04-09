@@ -87,12 +87,13 @@ class Deck:
         with open(file, "w") as f:
             f.write(str(self))
 
-    def load(self, file: str) -> None:
+    def load(file: str):
         logging.info(f"Loading {file}")
         file = Path(file)
+        deck = Deck()
         if not file.exists():
             print(f"Can't load file {file}")
-            return
+            return deck
         with file.open("r") as f:
             in_sideboard = False
             for line in f:
@@ -103,9 +104,10 @@ class Deck:
                         i = line.find(' ')
                         n = int(line[:i])
                         card = line[i + 1:].rstrip()
-                        self.add_cards([card] * n, in_sideboard)
+                        deck.add_cards([card] * n, in_sideboard)
                     except (ValueError, IndexError):
                         logging.warning(f"Can't read {line}")
+        return deck
 
     def diff(self, other):
         """Return the number of different cards between self and other"""
