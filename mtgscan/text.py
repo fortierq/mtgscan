@@ -43,7 +43,7 @@ class MagicRecognition:
                 i = card.find(" //")
                 if i != -1:
                     card = card[:i]
-                f.write(card + "$1\n")
+                f.write(card + "$1\n")  # required for SymSpell
 
             all_cards_json = load_json(URL_ALL_CARDS)
             with Path(file_all_cards).open("a") as f:
