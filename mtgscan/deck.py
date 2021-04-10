@@ -53,6 +53,8 @@ class Pile:
     def __len__(self):
         return sum(self.cards[c] for c in self.cards)
 
+    def __iter__(self):
+        yield from self.cards.items()
 
 @dataclass
 class Deck:
@@ -71,6 +73,10 @@ class Deck:
         self.maindeck += other.maindeck
         self.sideboard += other.sideboard
         return self
+
+    def __iter__(self):
+        yield from self.maindeck
+        yield from self.sideboard
 
     def add_card(self, card: str, in_sideboard: bool) -> None:
         if in_sideboard:
