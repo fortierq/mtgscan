@@ -11,7 +11,7 @@ import mtgscan.deck
 from mtgscan.ocr.azure import Azure
 import mtgscan.text
 
-FILE_ALL_CARDS = str(DIR_DATA / "all_cards_fr.txt")
+FILE_ALL_CARDS = str(DIR_DATA / "all_cards.txt")
 FILE_KEYWORDS = str(DIR_DATA / "Keywords.json")
 
 FORMAT = "[%(asctime)s %(filename)s:%(lineno)s:%(funcName)s()] %(message)s"
