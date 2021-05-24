@@ -45,10 +45,7 @@ class Pile:
         return self
 
     def __str__(self):
-        s = ""
-        for card in self.cards:
-            s += f"{self.cards[card]} {card}\n"
-        return s
+        return "".join(f"{self.cards[card]} {card}\n" for card in self.cards)
 
     def __len__(self):
         return sum(self.cards[c] for c in self.cards)
