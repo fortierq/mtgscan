@@ -21,7 +21,7 @@ def load_json(url):
 
 
 class MagicRecognition:
-    def __init__(self, file_all_cards: str, file_keywords: str, languages=tuple("English"), max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
+    def __init__(self, file_all_cards: str, file_keywords: str, languages=("English",), max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
         """Load dictionnaries of cards and keywords
 
         Parameters
