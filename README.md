@@ -91,7 +91,7 @@ This produces the following outputs, for each sample and OCR:
 
 ## Basic usage
 
-Let's compute the decklist from the following screenshot:
+Let's retrieve the decklist from the following screenshot:
 ![Screenshot](https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg)
 
 ```python
