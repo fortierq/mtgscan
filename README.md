@@ -5,9 +5,35 @@
 ![mtgscan](https://user-images.githubusercontent.com/49362475/102022934-448ffb80-3d8a-11eb-8948-3a10d190162a.jpg)
 
 MTGScan uses OCR recognition to list Magic cards from an image.  
-After OCR, cards are looked up in a dictionnary provided by MTGJSON (https://mtgjson.com), using fuzzy search with SymSpell (https://github.com/wolfgarbe/SymSpell).
+After OCR, cards are looked up in a dictionnary provided by [MTGJSON](https://mtgjson.com), using fuzzy search with [SymSpell](https://github.com/wolfgarbe/SymSpell).
 
-Try it online: [https://qfmtgscanapp.azurewebsites.net](https://qfmtgscanapp.azurewebsites.net/) (wait for the app to start - Azure free tier automatically shuts down the app when idle). Repository for this app: https://github.com/fortierq/mtgscan-app.
+## [Try the Web App](https://qfmtgscanapp.azurewebsites.net)
+```mermaid
+  flowchart LR;
+  subgraph "Browser"
+    C1[Client];
+    C2[Client];
+    C3[Client];
+  end
+  subgraph "Frontend"
+    F((Flask Server));
+  end
+  subgraph "Backend"
+    W1[Celery Worker<br>using mtgscan];
+    W2[Celery Worker<br>using mtgscan];
+  end
+  subgraph "Cloud"
+    A[Azure Read OCR];
+  end
+  C1 <-->|Socket.IO| F;
+  C2 <-->|Socket.IO| F;
+  C3 <-->|Socket.IO| F;
+  F <-->|RedisMQ| W1;
+  F <-->|RedisMQ| W2;
+  W1 <-->|API| A;
+  W2 <-->|API| A;
+```
+[Repository for the web app](https://github.com/fortierq/mtgscan-app)
 
 ## Prerequisites
 
@@ -118,11 +144,8 @@ Output:
 2 Wurmcoil Engine
 ```
 
-## Features
-- Tested on MTGO, Arena and IRL (simple) images
-- Handle sideboard (only on the right side)  
-- Support for stacked cards
-
-## TODO
-- Add and compare OCR (GCP, AWS...)
-- Add Twitter bot and web service
+## Task list
+- [x] Tested on MTGO, Arena and IRL (simple) images
+- [x] Handle sideboard (only on the right side)  
+- [x] Support for stacked cards
+- [ ] Add and compare OCR (GCP, AWS...)
