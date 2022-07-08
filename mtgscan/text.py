@@ -21,7 +21,12 @@ def load_json(url):
 
 
 class MagicRecognition:
-    def __init__(self, file_all_cards: str, file_keywords: str, languages=("English",), max_ratio_diff=0.3, max_ratio_diff_keyword=0.2) -> None:
+    def __init__(self,
+                 file_all_cards: str,
+                 file_keywords: str,
+                 languages=("English", ),
+                 max_ratio_diff=0.3,
+                 max_ratio_diff_keyword=0.2) -> None:
         """Load dictionnaries of cards and keywords
 
         Parameters
@@ -37,8 +42,9 @@ class MagicRecognition:
         """
         self.max_ratio_diff = max_ratio_diff
         self.max_ratio_diff_keyword = max_ratio_diff_keyword
-        
+
         if not Path(file_all_cards).is_file():
+
             def write_card(f, card):
                 i = card.find(" //")
                 if i != -1:
@@ -77,7 +83,7 @@ class MagicRecognition:
         self.sym_keywords = SymSpell(max_dictionary_edit_distance=3)
         for k in keywords:
             self.sym_keywords.create_dictionary_entry(k, 1)
-        print(f"Loaded {file_keywords}: {len(keywords)} cards")
+        print(f"Loaded {file_keywords}: {len(keywords)} keywords")
 
     def _preprocess(self, text: str) -> str:
         """Remove characters which can't appear on a Magic card (OCR error)"""

@@ -53,6 +53,7 @@ class Pile:
     def __iter__(self):
         yield from self.cards.items()
 
+
 @dataclass
 class Deck:
     maindeck: Pile = field(default_factory=Pile)

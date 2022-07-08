@@ -4,14 +4,16 @@ import logging
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+
 @dataclass
 class BoxText:
     box: tuple  # (x, y, ...) with (x, y) the bottom-left vertex
-    text: str   # text, presumably a card name
+    text: str  # text, presumably a card name
     n: int = 1  # number of occurences of the card
 
     def __iter__(self):
         yield from (self.box, self.text, self.n)
+
 
 @dataclass
 class BoxTextList:
@@ -67,7 +69,7 @@ class BoxTextList:
         """
         logging.info(f"Save box_texts image to {image_out}")
         img = plt.imread(image_in, image_out)
-        fig, ax = plt.subplots(figsize=(img.shape[1]//64, img.shape[0]//64))
+        fig, ax = plt.subplots(figsize=(img.shape[1] // 64, img.shape[0] // 64))
         ax.imshow(img, aspect='equal')
         for box, text, n in self.box_texts:
             P = (box[0], box[1])
@@ -80,8 +82,7 @@ class BoxTextList:
             ax.add_line(line)
             if n != 1:
                 text = f"{n}x {text}"
-            ax.text(P[0], P[1], text, bbox=dict(
-                facecolor='blue', alpha=0.5), fontsize=13, color='white')
+            ax.text(P[0], P[1], text, bbox=dict(facecolor='blue', alpha=0.5), fontsize=13, color='white')
         plt.axis('off')
         plt.tight_layout()
         fig.savefig(image_out)
