@@ -1,4 +1,6 @@
+import base64
 from dataclasses import dataclass, field
+from io import BytesIO
 import logging
 
 import matplotlib.pyplot as plt
@@ -57,6 +59,15 @@ class BoxTextList:
                 text = f.readline().rstrip('\n')
                 self.add(tuple(map(int, box.split(" "))), text, 1)
 
+    def get_image_base64(self, image_in):
+        buffer = BytesIO()
+        self._get_image(image_in).savefig(buffer, format='png')
+        buffer.seek(0)
+        image_png = buffer.getvalue()
+        buffer.close()
+        graphic = base64.b64encode(image_png)
+        return graphic.decode('utf-8')
+
     def save_image(self, image_in, image_out):
         """Add boxes to `image_in` and save it in `image_out`
 
@@ -68,7 +79,10 @@ class BoxTextList:
             Path to the image to be saved
         """
         logging.info(f"Save box_texts image to {image_out}")
-        img = plt.imread(image_in, image_out)
+        self._get_image(image_in).savefig(image_out)
+
+    def _get_image(self, image_in):
+        img = plt.imread(image_in)
         fig, ax = plt.subplots(figsize=(img.shape[1] // 64, img.shape[0] // 64))
         ax.imshow(img, aspect='equal')
         for box, text, n in self.box_texts:
@@ -83,6 +97,6 @@ class BoxTextList:
             if n != 1:
                 text = f"{n}x {text}"
             ax.text(P[0], P[1], text, bbox=dict(facecolor='blue', alpha=0.5), fontsize=13, color='white')
-        plt.axis('off')
-        plt.tight_layout()
-        fig.savefig(image_out)
+        ax.axis('off')
+        fig.tight_layout()
+        return fig
