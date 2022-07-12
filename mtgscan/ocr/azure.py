@@ -38,7 +38,6 @@ class Azure(OCR):
         logging.info(f"Send {image} to Azure")
         response = requests.post(self.text_recognition_url, headers=headers, json=json, data=data)
         response.raise_for_status()
-        analysis = {}
         poll = True
         while poll:
             response_final = requests.get(response.headers["Operation-Location"], headers=headers)
