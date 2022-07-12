@@ -15,7 +15,7 @@ symspellpy = "^6.7.0"
 requests = "^2.25.0"
 matplotlib = "^3.3.3"
 psutil = "^5.8.0"
-numpy = "^1.23.0"
+numpy = "^1.19.3"
 
 [tool.poetry.dev-dependencies]
 yapf = "^0.30.0"
