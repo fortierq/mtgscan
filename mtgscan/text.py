@@ -199,6 +199,7 @@ class MagicRecognition:
         if i != -1:
             dist = int(self.max_ratio_diff * i)
             card = None
+            t = text[:i]
             for c in self.all_cards:
                 d = self.edit_dist.compare(text[:i], c[:i], dist)
                 if d != -1 and d < dist:
