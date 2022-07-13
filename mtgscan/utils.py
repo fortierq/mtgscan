@@ -1,5 +1,6 @@
 from io import BytesIO
 from urllib.parse import urlparse
+import base64
 
 import numpy as np
 import requests
@@ -16,4 +17,4 @@ def load_url_or_file(image: str) -> Image.Image:
         response = requests.get(image)
         response.raise_for_status()
         image = BytesIO(response.content)
-    return np.asarray(Image.open(image))
+    return np.asarray(Image.open(BytesIO(base64.b64decode(image))))
