@@ -1,15 +1,15 @@
 import logging
 import os
 import time
-from urllib.parse import urlparse
 
 import requests
 from mtgscan.box_text import BoxTextList
-
+from mtgscan.utils import is_url
 from .ocr import OCR
 
 
 class Azure(OCR):
+
     def __init__(self):
         try:
             self.subscription_key = os.environ['AZURE_VISION_KEY']
@@ -26,8 +26,7 @@ class Azure(OCR):
     def image_to_box_texts(self, image: str) -> BoxTextList:
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         json, data = None, None
-        parsed = urlparse(str(image))
-        if len(parsed.scheme) > 1:  # if URL
+        if is_url(image):  # if URL
             json = {'url': image}
         else:
             headers['Content-Type'] = 'application/octet-stream'
