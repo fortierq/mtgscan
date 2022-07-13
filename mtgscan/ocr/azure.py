@@ -1,7 +1,6 @@
 import logging
 import os
 import time
-from pathlib import Path
 
 import requests
 from mtgscan.box_text import BoxTextList
@@ -24,7 +23,7 @@ class Azure(OCR):
     def __str__(self):
         return "Azure"
 
-    def image_to_box_texts(self, image: str) -> BoxTextList:
+    def image_to_box_texts(self, image: str, binary=False) -> BoxTextList:
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         json, data = None, None
         if is_url(image):  # if URL
@@ -32,7 +31,7 @@ class Azure(OCR):
         else:
             headers['Content-Type'] = 'application/octet-stream'
             data = image
-            if len(image) < 100 and Path(image).exists():
+            if not binary:
                 with open(image, "rb") as f:
                     data = f.read()
         logging.info(f"Send {image} to Azure")
