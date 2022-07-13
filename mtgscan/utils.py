@@ -16,4 +16,5 @@ def load_url_or_file(image: str) -> Image.Image:
         response = requests.get(image)
         response.raise_for_status()
         image = BytesIO(response.content)
-    return np.asarray(Image.open(bytes(image, encoding="utf-8")))
+    print(image)
+    return np.asarray(Image.open(image))
