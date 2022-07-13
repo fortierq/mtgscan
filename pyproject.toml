@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mtgscan"
-version = "1.0.7"
+version = "1.0.8"
 description = "Convert an image containing Magic cards to decklist"
 authors = ["qfortier <qpfortier@gmail.com>"]
 license = "MIT"
@@ -21,6 +21,7 @@ numpy = "^1.19.3"
 yapf = "^0.30.0"
 flake8 = "^3.8.4"
 pylint = "^2.6.0"
+ipykernel = "^6.15.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
