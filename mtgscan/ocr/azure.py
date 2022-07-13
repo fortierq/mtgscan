@@ -23,15 +23,15 @@ class Azure(OCR):
     def __str__(self):
         return "Azure"
 
-    def image_to_box_texts(self, image: str, binary=False) -> BoxTextList:
+    def image_to_box_texts(self, image: str, is_base64=False) -> BoxTextList:
         headers = {'Ocp-Apim-Subscription-Key': self.subscription_key}
         json, data = None, None
-        if is_url(image):  # if URL
+        if is_url(image):
             json = {'url': image}
         else:
             headers['Content-Type'] = 'application/octet-stream'
             data = image
-            if not binary:
+            if not is_base64:
                 with open(image, "rb") as f:
                     data = f.read()
         logging.info(f"Send {image} to Azure")
