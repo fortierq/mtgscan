@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from pathlib import Path
 
 import requests
 from mtgscan.box_text import BoxTextList
@@ -30,8 +31,10 @@ class Azure(OCR):
             json = {'url': image}
         else:
             headers['Content-Type'] = 'application/octet-stream'
-            with open(image, "rb") as f:
-                data = f.read()
+            data = image
+            if len(image) < 100 and Path(image).exists():
+                with open(image, "rb") as f:
+                    data = f.read()
         logging.info(f"Send {image} to Azure")
         response = requests.post(self.text_recognition_url, headers=headers, json=json, data=data)
         response.raise_for_status()
