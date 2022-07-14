@@ -97,6 +97,10 @@ This produces the following outputs, for each sample and OCR:
 ```
 $ poetry run python example.py
 
+Loading https://mtgjson.com/api/v5/VintageAtomic.json
+Loaded all_cards.txt: 23253 cards
+Loading https://mtgjson.com/api/v5/Keywords.json
+Loaded Keywords.json: 282 keywords
 4 Ancient Tomb
 4 Mishra's Factory
 4 Mishra's Workshop
