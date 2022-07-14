@@ -38,6 +38,7 @@ After OCR, cards are looked up in a dictionnary provided by [MTGJSON](https://mt
 ## Prerequisites
 
 - Python >= 3.7
+- (Recommended) Poetry
 - Credentials for the required OCR (e.g Azure Computer Vision Read API)
 
 ## Installation
@@ -46,12 +47,6 @@ After OCR, cards are looked up in a dictionnary provided by [MTGJSON](https://mt
 
 ```python
 poetry install
-```
-
-### ... with requirements
-
-```python
-pip install -r requirements.txt
 ```
 
 ### ...  with pip
