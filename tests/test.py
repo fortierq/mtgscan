@@ -17,9 +17,7 @@ FILE_KEYWORDS = str(DIR_DATA / "Keywords.json")
 FORMAT = "[%(asctime)s %(filename)s:%(lineno)s:%(funcName)s()] %(message)s"
 DIR_SAMPLES = Path(__file__).parent / "samples"
 rec = mtgscan.text.MagicRecognition(FILE_ALL_CARDS, FILE_KEYWORDS, max_ratio_diff=0.25)
-ocr_all = [
-    Azure()
-]
+ocr_all = [Azure()]
 errors = {str(ocr): [] for ocr in ocr_all}
 
 for sample in DIR_SAMPLES.iterdir():

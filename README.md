@@ -89,24 +89,14 @@ This produces the following outputs, for each sample and OCR:
 - errors.txt: history of the number of errors made by the OCR
 - box_texts.txt: output of the OCR
 
-## Basic usage
+## Example
 
-Let's retrieve the decklist from the following screenshot:
+[This example](./example.py) scans the following screenshot:
 ![Screenshot](https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg)
 
-```python
-from mtgscan.text import MagicRecognition
-from mtgscan.ocr.azure import Azure
-
-azure = Azure()
-rec = MagicRecognition(file_all_cards="all_cards.txt", file_keywords="Keywords.json")  # download card files from mtgjson if missing
-box_texts = azure.image_to_box_texts("https://user-images.githubusercontent.com/49362475/105632710-fa07a180-5e54-11eb-91bb-c4710ef8168f.jpeg")
-deck = rec.box_texts_to_deck(box_texts)
-print(deck)
 ```
+$ poetry run python example.py
 
-Output:
-```console
 4 Ancient Tomb
 4 Mishra's Factory
 4 Mishra's Workshop
@@ -143,9 +133,3 @@ Output:
 4 Pithing Needle
 2 Wurmcoil Engine
 ```
-
-## Task list
-- [x] Tested on MTGO, Arena and IRL (simple) images
-- [x] Handle sideboard (only on the right side)  
-- [x] Support for stacked cards
-- [ ] Add and compare OCR (GCP, AWS...)

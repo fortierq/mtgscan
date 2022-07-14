@@ -83,7 +83,7 @@ class BoxTextList:
         self._get_image(image_in).savefig(image_out)
 
     def _get_image(self, image_in):
-        img = mtgscan.utils.load_url_or_base64(image_in)
+        img = mtgscan.utils.load_url_or_file_or_base64(image_in)
         fig, ax = plt.subplots(figsize=(img.shape[1] // 64, img.shape[0] // 64))
         ax.imshow(img, aspect='equal')
         for box, text, n in self.box_texts:
