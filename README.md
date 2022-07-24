@@ -55,6 +55,10 @@ poetry install
 pip install mtgscan
 ```
 
+### ... with docker
+
+See https://github.com/fortierq/mtgscan-app
+
 ## OCR
 
 Currently, only Azure OCR is supported. To add an OCR, inherit mtgscan.ocr.OCR.  
